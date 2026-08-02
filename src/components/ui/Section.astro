@@ -6,7 +6,7 @@ const { id, tone = "paper", narrow = false, class: className = "" } = Astro.prop
   <div class={narrow ? "narrow" : "container"}><slot /></div>
 </section>
 <style>
-  .section { padding-block: var(--space-xl); }
+  .section { padding-block: var(--space-xl); scroll-margin-top: 8rem; }
   .section--surface { background: var(--surface); }
   .section--pine { --eyebrow-color: var(--dawn); background: var(--pine-deep); color: color-mix(in srgb, var(--surface) 90%, var(--pine)); }
   .section--pine :global(h2), .section--pine :global(h3), .section--pine :global(a) { color: white; }

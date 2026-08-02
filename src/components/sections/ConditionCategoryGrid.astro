@@ -8,13 +8,11 @@ const { categories, conditions } = Astro.props;
 <div class="category-grid">
   {categories.map((category) => {
     const count = conditions.filter((condition) => condition.category === category.slug).length;
-    return <Card><span class="count">{String(category.order).padStart(2,"0")}</span><h3><a href={`/conditions/${category.slug}`}>{category.title}</a></h3><p>{category.intro}</p><a class="view" href={`/conditions/${category.slug}`}>View {count || "the"} conditions <span aria-hidden="true">→</span></a></Card>;
+    return <Card><h3><a href={`/conditions/${category.slug}`}>{category.title}</a></h3><p>{category.intro}</p><a class="view" href={`/conditions/${category.slug}`}>View {count || "the"} conditions <span aria-hidden="true">→</span></a></Card>;
   })}
 </div>
 <style>
   .category-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: var(--space-md); }
-  .count { color: var(--dawn-ink); font: 500 var(--step--1)/1 var(--font-utility); }
-  h3 { margin-top: .75rem; }
   h3 a { text-decoration: none; color: inherit; }
   p { color: var(--muted); }
   .view { font-weight: 600; text-decoration: none; }

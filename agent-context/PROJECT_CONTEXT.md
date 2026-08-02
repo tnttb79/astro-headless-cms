@@ -54,12 +54,13 @@ Important project rule: the Wix-managed Astro project is already connected. Reus
 
 Replace the current manually assembled Wix Studio site with a modern, trustworthy, patient-focused clinic website that:
 
-- Presents Dr. Kang as the central trust figure.
+- Presents Dr. Kang as the central trust figure, prioritizing his competence and sincerity.
+- Centers main content on his personal introduction, services, conditions treated, insurance, and pricing.
 - Explains his background, family tradition, education, faith, and care philosophy.
 - Makes services and conditions easy to understand and browse.
 - Gives new patients clear preparation and aftercare guidance.
-- Highlights VA participation, insurance options, pricing, and auto-injury support.
-- Supports both the Mesa and Payson clinic locations.
+- Emphasizes VA information for heavier marketing to VA patients, alongside insurance options, pricing, and auto-injury support.
+- Supports both the Mesa clinic and the upcoming Payson clinic in design and content.
 - Uses strong, clear contact and booking calls to action.
 - Is fast, accessible, responsive, locally searchable, and easy to maintain.
 - Lets clinic content be edited in Wix without changing frontend code.
@@ -103,6 +104,18 @@ There is an abandoned Wix site from an earlier attempt with site ID `ca662f24-21
 
 # 5. Latest Dr. Kang Update
 
+## Strategic direction
+
+Dr. Kang’s latest direction for the website:
+
+- Prioritize conveying his competence and sincerity over decorative or promotional clutter.
+- Keep the main content focused on his personal introduction, services, conditions treated, insurance, and pricing.
+- Market more heavily to VA patients; VA information should be easy to find and clearly emphasized across the site, not only on the VA & Insurance page.
+- He is preparing the second clinic in Payson, so design and content must support both Mesa and Payson as first-class locations.
+- The clinic-supplied VA marketing poster at `public/images/source-document/VA Poster 8.png` is a visual and content reference only. Do not copy its layout, baked-in copy, or credential line onto the website. Use it to inform VA-facing tone, professional presentation, and dual-location readiness; publish only facts already confirmed elsewhere in this file.
+
+## Primary navigation
+
 Dr. Kang requested a simpler primary structure:
 
 - Home
@@ -133,7 +146,7 @@ Implementation requirements:
 
 `TODO: CONFIRM THE QUERY STRING.` `isNewPatient=false` preselects a returning patient, and `referrerType=widget` indicates the link was copied from an embed snippet. Most website Book traffic is new patients, so confirm whether the site should use `isNewPatient=true`, omit the parameter so Zocdoc asks, or offer separate new-patient and returning-patient CTAs.
 
-Dr. Kang is also preparing a second clinic. The Contact experience must show both locations with separate address, phone, map, and directions actions.
+Because the Payson clinic is in preparation, the Contact experience and other dual-location surfaces must show both clinics with separate address, phone, map, and directions actions.
 
 ### Mesa Clinic
 
@@ -182,12 +195,13 @@ Current practitioner profile:
 
 Brand themes:
 
+- Competence and sincerity
 - Third-generation tradition
 - 28 years of clinical experience
 - Personalized care
 - Root-cause and whole-person thinking
 - Traditional medicine with modern understanding
-- Compassion and sincerity
+- Compassion
 - Body, mind, and spirit
 - Christian faith and prayer
 
@@ -390,7 +404,7 @@ Use category/index pages and reusable condition templates. Do not generate detai
 
 ## 7.6 VA & Insurance
 
-This is a primary navigation page and a major trust/conversion section.
+This is a primary navigation page and a major trust/conversion section. Because VA outreach is a growing priority, keep VA messaging prominent here and preview it on Home and other high-traffic surfaces without repeating full policy detail everywhere.
 
 Current draft business information:
 
@@ -491,6 +505,8 @@ The existing extracted image library remains the approved working asset pool. Co
 `public/images/source-document/`
 
 The existing extracted images remain valid source material for the redesign.
+
+`VA Poster 8.png` in that folder is covered by the Section 5 reference rule: visual/content guidance only, not a layout or copy source.
 
 Priority:
 

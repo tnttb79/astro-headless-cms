@@ -1,14 +1,16 @@
 ---
 import type { InsuranceProvider } from "../../types/content";
-import Card from "../ui/Card.astro";
 interface Props { providers: InsuranceProvider[]; verified?: boolean; }
 const { providers, verified = false } = Astro.props;
 ---
-{providers.length ? <div class="insurance-grid">{providers.map((provider) => <Card><h3>{provider.providerName}</h3><p>{provider.coverageNote}</p><span>{verified && provider.networkStatus === "in_network" ? "In network" : "Please verify benefits"}</span></Card>)}</div> : <p class="empty-state">Please call the clinic to discuss your insurance plan.</p>}
+{providers.length ? <ul class="insurance-list">{providers.map((provider) => <li><strong>{provider.providerName}</strong><span>{verified && provider.networkStatus === "in_network" ? "Participation verified" : "Benefits check required"}</span></li>)}</ul> : <p class="empty-state">Please call the clinic to discuss your insurance plan.</p>}
 <style>
-  .insurance-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: var(--space-md); }
-  h3 { font-size: var(--step-1); }
-  p { color: var(--muted); }
-  span { color: var(--pine); font: 500 .72rem/1.4 var(--font-utility); text-transform: uppercase; }
-  @media (max-width: 800px) { .insurance-grid { grid-template-columns: 1fr; } }
+  .insurance-list { list-style: none; padding: 0; margin: var(--space-lg) 0 0; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; background: var(--surface); }
+  li { min-height: 5.5rem; padding: 1rem 1.2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--line); }
+  li:nth-child(odd) { border-right: 1px solid var(--line); }
+  li:nth-last-child(-n+2) { border-bottom: 0; }
+  strong { color: var(--pine-deep); }
+  span { max-width: 12rem; color: var(--muted); font: 500 .68rem/1.4 var(--font-utility); letter-spacing: .04em; text-align: right; text-transform: uppercase; }
+  @media (max-width: 680px) { .insurance-list { grid-template-columns: 1fr; } li:nth-child(odd) { border-right: 0; } li:nth-last-child(2) { border-bottom: 1px solid var(--line); } }
+  @media (max-width: 420px) { li { align-items: flex-start; flex-direction: column; gap: .25rem; } span { text-align: left; } }
 </style>

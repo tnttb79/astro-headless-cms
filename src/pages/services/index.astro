@@ -5,27 +5,28 @@ import Eyebrow from "../../components/ui/Eyebrow.astro";
 import ServiceGrid from "../../components/sections/ServiceGrid.astro";
 import CtaBand from "../../components/sections/CtaBand.astro";
 import Card from "../../components/ui/Card.astro";
+import Button from "../../components/ui/Button.astro";
 import { getSiteSettings, getTreatments } from "../../lib/wix/data";
 import { SITE_IMAGES } from "../../lib/images";
 const [services,settings] = await Promise.all([getTreatments(),getSiteSettings()]);
 const core = services.filter((service)=>service.serviceGroup === "core");
 const specialized = services.filter((service)=>service.serviceGroup === "specialized");
 const also = [
-  { title:"Cupping", text:"Traditional suction therapy that may be included in an individualized plan.", image:SITE_IMAGES.cupping },
-  { title:"Facial Acupressure", text:"Non-needle facial pressure-point care for relaxation and cosmetic wellness.", image:SITE_IMAGES["facial-acupressure"] },
-  { title:"Foot Reflexology", text:"Focused foot therapy offered as an additional manual-care service.", image:SITE_IMAGES.reflexology },
+  { slug:"cupping", title:"Cupping", text:"Traditional suction therapy that may be included in an individualized plan.", image:SITE_IMAGES.cupping },
+  { slug:"facial-acupressure", title:"Facial Acupressure", text:"Non-needle facial pressure-point care for relaxation and cosmetic wellness.", image:SITE_IMAGES["facial-acupressure"] },
+  { slug:"foot-reflexology", title:"Foot Reflexology", text:"Focused foot therapy offered as an additional manual-care service.", image:SITE_IMAGES.reflexology },
 ];
 ---
 <SiteLayout title="Acupuncture & Integrative Services" description="Explore acupuncture, manual therapies, herbal medicine, auto-injury care, and specialized supportive care in Mesa and Payson.">
   <header class="page-hero container"><Eyebrow>Services</Eyebrow><h1>Care built around the person, not a protocol.</h1><p class="lede">Every service begins with an assessment. Dr. Kang may combine approaches when appropriate and adjusts the plan as your needs change.</p></header>
   <Section tone="surface"><Eyebrow>Core care</Eyebrow><h2>Nine clinic services</h2><ServiceGrid services={core} /></Section>
   <Section><Eyebrow>Focused support</Eyebrow><h2>Specialized care</h2><p class="lede">These pages describe complementary support—not substitutes for diagnosis or treatment from an appropriate medical professional.</p><ServiceGrid services={specialized} /></Section>
-  <Section tone="surface"><Eyebrow>Also available</Eyebrow><h2>Additional in-clinic care</h2><div class="also-grid">{also.map((item)=><Card><img src={item.image.src} srcset={item.image.srcSet} sizes="(max-width:700px) 100vw, 33vw" width={item.image.width} height={item.image.height} alt={item.image.alt} loading="lazy" decoding="async" /><h3>{item.title}</h3><p>{item.text}</p></Card>)}</div></Section>
-  <CtaBand bookingUrl={settings.bookingUrl} phone={settings.phone} section="services_footer" />
+  <Section tone="surface"><Eyebrow>Also available</Eyebrow><h2>Additional in-clinic care</h2><p class="lede">These options may be added to an individualized visit rather than booked as stand-alone services.</p><div class="also-grid">{also.map((item)=><Card><img src={item.image.src} srcset={item.image.srcSet} sizes="(max-width:760px) calc(100vw - 2rem), 33vw" width={item.image.width} height={item.image.height} alt={item.image.alt} loading="lazy" decoding="async" style={`object-position:${item.image.position}`} /><h3>{item.title}</h3><p>{item.text}</p><Button href={`/contact?service=${item.slug}`} variant="ghost" analyticsEvent="cta_click" analyticsSection={`additional_${item.slug}`}>Ask about {item.title}</Button></Card>)}</div></Section>
+  <CtaBand bookingUrl={settings.bookingUrl} section="services_footer" />
 </SiteLayout>
 <style>
   .also-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-md)}
-  .also-grid img{width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:var(--radius-md);margin-bottom:1.1rem}
+  .also-grid img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--radius-md);margin-bottom:1.1rem}
   .also-grid p{color:var(--muted)}
   @media(max-width:760px){.also-grid{grid-template-columns:1fr}}
 </style>

@@ -1,9 +1,9 @@
 ---
 import MobileNav from "./MobileNav";
 import Button from "../ui/Button.astro";
-import type { SiteSettings } from "../../types/content";
-interface Props { settings: SiteSettings; currentPath: string; }
-const { settings, currentPath } = Astro.props;
+import type { Location, SiteSettings } from "../../types/content";
+interface Props { settings: SiteSettings; locations: Location[]; currentPath: string; }
+const { settings, locations, currentPath } = Astro.props;
 const items = [
   { href: "/", label: "Home" },
   { href: "/dr-kang", label: "Dr. Kang" },
@@ -14,20 +14,41 @@ const items = [
   { href: "/contact", label: "Contact" },
 ];
 ---
-<header class="site-header"><div class="container header-inner">
+<header class="site-header">
+  <div class="access-bar"><div class="container access-inner">
+    <a class="va-access" href="/va-insurance#va-care" data-analytics-event="cta_click" data-analytics-section="global_va_bar"><strong>Veterans</strong><span class="va-access__full">VA community care requires prior authorization. Review the steps.</span><span class="va-access__compact">VA authorization guide</span></a>
+    <div class="clinic-links" aria-label="Clinic phone numbers">{locations.map((location) => <a href={`tel:${location.phone.replace(/[^\d+]/g,"")}`} data-analytics-event="phone_click" data-analytics-section={`global_${location.slug}`}><strong>{location.city}</strong><span>{location.status === "opening_soon" ? "Opening soon · " : ""}{location.phone}</span></a>)}</div>
+    <a class="clinic-links-compact" href="/contact">Mesa &amp; Payson</a>
+  </div></div>
+  <div class="container header-inner">
   <a class="brand" href="/" aria-label={`${settings.businessName}, home`}><span>Holy Hill</span><small>Acupuncture Clinic</small></a>
   <nav class="desktop-nav" aria-label="Primary navigation"><ul>{items.map((item) => <li><a href={item.href} aria-current={currentPath === item.href || (item.href !== "/" && currentPath.startsWith(`${item.href}/`)) ? "page" : undefined}>{item.label}</a></li>)}</ul></nav>
   <div class="desktop-book"><Button href={settings.bookingUrl} external analyticsEvent="booking_click" analyticsSection="desktop_header">Book</Button></div>
+  <div class="mobile-book"><Button href={settings.bookingUrl} external analyticsEvent="booking_click" analyticsSection="compact_header">Book</Button></div>
   <MobileNav client:load items={items} bookingUrl={settings.bookingUrl} currentPath={currentPath} />
-</div></header>
+  </div>
+</header>
 <style>
   .site-header { position: sticky; top: 0; z-index: 50; background: rgb(241 242 237 / .95); border-bottom: 1px solid var(--line); backdrop-filter: blur(12px); }
+  .access-bar { background: var(--pine-deep); color: white; }
+  .access-inner { min-height: 2.35rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .access-inner a { color: white; text-decoration: none; }
+  .va-access { display: inline-flex; align-items: center; gap: .5rem; font-size: var(--step--1); }
+  .va-access strong { color: var(--dawn-pale); font: 600 .7rem/1 var(--font-utility); letter-spacing: .08em; text-transform: uppercase; }
+  .va-access__compact, .clinic-links-compact { display: none; }
+  .clinic-links { display: flex; align-items: center; gap: 1rem; font-size: .74rem; }
+  .clinic-links a { display: inline-flex; align-items: center; gap: .35rem; }
+  .clinic-links strong { color: var(--dawn-pale); font-weight: 600; }
+  .clinic-links span { color: color-mix(in srgb, white 82%, var(--pine)); }
   .header-inner { min-height: 5rem; display: flex; align-items: center; gap: 1.2rem; }
   .brand { display: flex; flex-direction: column; margin-right: auto; color: var(--pine-deep); text-decoration: none; line-height: 1; }
   .brand span { font: 400 1.38rem/1 var(--font-display); }
   .brand small { margin-top: .3rem; color: var(--muted); font: 500 .61rem/1 var(--font-utility); letter-spacing: .12em; text-transform: uppercase; }
-  ul { display: flex; align-items: center; gap: clamp(.65rem,1.4vw,1.25rem); list-style: none; margin: 0; padding: 0; }
-  .desktop-nav a { min-height: 44px; display: inline-flex; align-items: center; color: var(--ink); font-size: .86rem; font-weight: 500; text-decoration: none; white-space: nowrap; }
+  ul { display: flex; align-items: center; gap: clamp(.45rem,1vw,1rem); list-style: none; margin: 0; padding: 0; }
+  .desktop-nav a { min-height: 44px; display: inline-flex; align-items: center; color: var(--ink); font-size: clamp(.76rem,.72rem + .12vw,.84rem); font-weight: 500; text-decoration: none; white-space: nowrap; }
   .desktop-nav a:hover, .desktop-nav a[aria-current="page"] { color: var(--dawn-ink); }
-  @media (max-width: 980px) { .desktop-nav, .desktop-book { display: none; } }
+  .mobile-book { display: none; margin-left: auto; }
+  @media (max-width: 860px) { .desktop-nav, .desktop-book { display: none; } .mobile-book { display: block; } .brand { margin-right: 0; } .clinic-links { display: none; } .clinic-links-compact { display: inline; flex-shrink: 0; font-size: .75rem; } }
+  @media (max-width: 560px) { .access-inner { gap: .6rem; } .va-access__full { display: none; } .va-access__compact { display: inline; } }
+  @media (max-width: 420px) { .header-inner { gap: .5rem; } .brand span { font-size: 1.18rem; } .brand small { font-size: .52rem; } .mobile-book :global(.button) { padding-inline: .85rem; } }
 </style>

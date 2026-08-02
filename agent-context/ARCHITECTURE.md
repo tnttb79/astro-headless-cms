@@ -218,7 +218,7 @@ Division of labor: **developers build the experience; the dashboard runs the day
 - CMS collections (`Treatments`, `Conditions`, `SiteSettings`, `Locations`, `InsuranceProviders`, `Pricing`, `Testimonials`) are represented by typed guarded adapters and the idempotent migration in `scripts/wix-seed.mjs`.
 - Contact form seeded; the page reads its schema live and submits to Wix Forms via a server route.
 - The complete route set, design system, responsive images, SEO, accessibility behavior, analytics event map, and client/server form validation are implemented.
-- Source-derived medical, insurance, pricing, credential, and testimonial copy remains **draft** and is tracked page-by-page in `CONTENT_REVIEW.md`.
+- Source-derived medical, insurance, pricing, credential, and testimonial copy remains **draft** and requires client approval before custom-domain cutover.
 - CMS migration is complete and independently verified. The production build passes and is published at the Wix host URL.
 - `@wix/astro-pages` registers the 20 concrete service/condition detail URLs so Wix's generated `pages-sitemap.xml` contains all 27 public HTML routes.
 - The live route, metadata, sitemap, robots, analytics, location, and invalid-form checks pass. Final business-copy approval and one real form-submission check remain client QA tasks; the old custom-domain site is untouched.

@@ -1,6 +1,6 @@
 /**
  * Idempotent Wix CMS migration and content seed for the approved redesign.
- * Source and compliance record: agent-context/PROJECT_CONTEXT.md and CONTENT_REVIEW.md.
+ * Source and compliance rules: agent-context/PROJECT_CONTEXT.md.
  * Existing rows are never deleted. Replaced placeholder rows are retained with published=false.
  */
 import { execFileSync } from "node:child_process";
@@ -114,7 +114,7 @@ async function retireReplacedRows(collectionId, canonicalIds) {
 }
 
 const imagePathBySlug = Object.fromEntries([
-  ["acupuncture","acupuncture-neck-treatment.png"],["electro-acupuncture","electro-acupuncture-treatment.png"],["facial-acupuncture","facial-acupuncture-specialty.png"],["ear-acupuncture","auricular-acupuncture-ear.jpeg"],["moxibustion","moxibustion-therapy-back.png"],["medical-massage-met","medical-massage-met-treatment.png"],["lymphatic-massage","lymphatic-massage-treatment.png"],["herbal-medicine","herbal-medicine-ingredients.png"],["auto-injury-care","therapeutic-massage-treatment.png"],["colds-and-allergies","cold-and-allergies.png"],["weight-loss-support","weight-loss-support.png"],["constipation-support","constipation-support.png"],["fertility-support","fertility-support.png"],["oncology-support","oncology-acupuncture-support.png"],
+  ["acupuncture","acupuncture-neck-treatment.png"],["electro-acupuncture","dr-kang-acupuncture-about.png"],["facial-acupuncture","facial-healing-acupressure-treatment.png"],["ear-acupuncture","auricular-acupuncture-ear.jpeg"],["moxibustion","moxibustion-therapy-closeup.png"],["medical-massage-met","medical-massage-met-treatment.png"],["lymphatic-massage","lymphatic-massage-treatment.png"],["herbal-medicine","herbal-medicine-ingredients.png"],["auto-injury-care","therapeutic-massage-treatment.png"],["colds-and-allergies","herbal-medicine-ingredients.png"],["weight-loss-support","tcm-formula-consultation.png"],["constipation-support","personalized-herbal-prescriptions.png"],["fertility-support","dr-kang-acupuncture-home.png"],["oncology-support","dr-kang-acupuncture-profile.png"],
 ]);
 
 async function seedRows(collectionId, rows, keyOf, transform = (row) => row) {

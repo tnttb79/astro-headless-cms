@@ -3,7 +3,7 @@ import type { PricingItem } from "../../types/content";
 interface Props { items: PricingItem[]; }
 const { items } = Astro.props;
 ---
-{items.length ? <div class="table-wrap"><table><caption class="sr-only">Clinic service pricing</caption><thead><tr><th scope="col">Service</th><th scope="col">Price</th><th scope="col">Note</th></tr></thead><tbody>{items.map((item) => <tr><th scope="row">{item.serviceName}</th><td>{item.price}</td><td>{item.priceNote}</td></tr>)}</tbody></table></div> : <p class="empty-state">Please contact the clinic for current pricing.</p>}
+{items.length ? <div class="table-wrap"><table><caption class="sr-only">Clinic service pricing</caption><thead><tr><th scope="col">Service</th><th scope="col">Price</th><th scope="col">Note</th></tr></thead><tbody>{items.map((item) => <tr><th scope="row">{item.serviceName}</th><td data-label="Price">{item.price}</td><td data-label="Note">{item.priceNote || "—"}</td></tr>)}</tbody></table></div> : <p class="empty-state">Please contact the clinic for current pricing.</p>}
 <style>
   .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
   table { width: 100%; border-collapse: collapse; min-width: 42rem; }
@@ -12,4 +12,15 @@ const { items } = Astro.props;
   tbody th { color: var(--pine-deep); }
   td:nth-child(2) { white-space: nowrap; font-family: var(--font-utility); color: var(--dawn-ink); }
   tbody tr:last-child > * { border-bottom: 0; }
+  @media (max-width: 620px) {
+    .table-wrap { overflow: visible; border: 0; background: transparent; }
+    table, tbody { display: block; min-width: 0; }
+    thead { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    tbody { display: grid; gap: .75rem; }
+    tr { display: grid; gap: .45rem; padding: 1rem 1.1rem; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
+    th, td { display: flex; justify-content: space-between; gap: 1rem; padding: 0; border: 0; }
+    tbody th { display: block; padding-bottom: .45rem; border-bottom: 1px solid var(--line); font-size: var(--step-0); }
+    td::before { content: attr(data-label); color: var(--muted); font: 500 .7rem/1.5 var(--font-utility); letter-spacing: .05em; text-transform: uppercase; }
+    td:nth-child(3) { color: var(--muted); text-align: right; }
+  }
 </style>

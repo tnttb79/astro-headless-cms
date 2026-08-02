@@ -1,6 +1,7 @@
 ---
+import { SITE_IMAGES } from "../../lib/images";
 interface Props { title: string; description: string; image?: string; noindex?: boolean; }
-const { title, description, image = "/images/site/home-hero-meditation-sunrise-1600.webp", noindex = false } = Astro.props;
+const { title, description, image = SITE_IMAGES.homeHero.src, noindex = false } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).toString();
 const socialImage = new URL(image, Astro.site ?? Astro.url.origin).toString();
 ---

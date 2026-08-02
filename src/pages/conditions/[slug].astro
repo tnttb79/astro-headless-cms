@@ -7,20 +7,21 @@ import Prose from "../../components/ui/Prose.astro";
 import Card from "../../components/ui/Card.astro";
 import CtaBand from "../../components/sections/CtaBand.astro";
 import { getConditionCategory } from "../../content/condition-categories";
-import { getConditionsByCategory,getSiteSettings } from "../../lib/wix/data";
+import { getConditionsByCategory,getSiteSettings,getTreatments } from "../../lib/wix/data";
 const slug=Astro.params.slug ?? "";
 const category=getConditionCategory(slug);
 if(!category) return new Response(null,{status:404,statusText:"Condition category not found"});
-const [conditions,settings]=await Promise.all([getConditionsByCategory(slug),getSiteSettings()]);
+const [conditions,settings,services]=await Promise.all([getConditionsByCategory(slug),getSiteSettings(),getTreatments()]);
+const serviceByTitle=new Map(services.map((service)=>[service.title,service]));
 ---
 <SiteLayout title={category.title} description={`${category.intro} Explore supportive care options at Marin Holy Hill Acupuncture Clinic.`}>
   <header class="page-hero container"><Breadcrumbs items={[{label:"Home",href:"/"},{label:"Conditions",href:"/conditions"},{label:category.title}]} /><Eyebrow>Condition category</Eyebrow><h1>{category.title}</h1><p class="lede">{category.intro}</p></header>
   <Section tone="surface"><h2>Concerns in this category</h2>{conditions.length?<div class="condition-list">{conditions.map((condition)=><Card><h3>{condition.title}</h3><p>{condition.summary}</p>{condition.description && <Prose html={condition.description} />}</Card>)}</div>:<p class="empty-state">Condition information is temporarily unavailable. Please contact the clinic.</p>}</Section>
-  <Section><div class="care-grid"><div><Eyebrow>Care options</Eyebrow><h2>Services commonly considered</h2><ul>{category.commonServices.map((service)=><li>{service}</li>)}</ul></div><div><Eyebrow>Important</Eyebrow><h2>Supportive care, coordinated well</h2><p>Acupuncture can be part of an integrative care plan. It does not replace diagnosis, medication, surgery, oncology, emergency care, or mental-health treatment.</p><p>Please seek appropriate medical evaluation for new, severe, persistent, or changing symptoms.</p></div></div></Section>
-  <CtaBand bookingUrl={settings.bookingUrl} phone={settings.phone} heading="Talk with us about your goals." section={`condition_${category.slug}`} />
+  <Section><div class="care-grid"><div><Eyebrow>Care options</Eyebrow><h2>Services commonly considered</h2><ul class="service-links">{category.commonServices.map((title)=>{const service=serviceByTitle.get(title);return <li>{service?<a href={`/services/${service.slug}`}>{title}<span aria-hidden="true"> →</span></a>:title}</li>})}</ul></div><div><Eyebrow>Important</Eyebrow><h2>Supportive care, coordinated well</h2><p>Acupuncture can be part of an integrative care plan. It does not replace diagnosis, medication, surgery, oncology, emergency care, or mental-health treatment.</p><p>Please seek appropriate medical evaluation for new, severe, persistent, or changing symptoms.</p></div></div></Section>
+  <CtaBand bookingUrl={settings.bookingUrl} heading="Talk with us about your goals." section={`condition_${category.slug}`} />
 </SiteLayout>
 <style>
   .condition-list{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-md)}.condition-list p{color:var(--muted)}.condition-list :global(.prose){padding-top:1rem;border-top:1px solid var(--line);color:var(--ink)}
-  .care-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-xl)}
+  .care-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-xl)}.service-links{list-style:none;padding:0;display:grid;gap:.55rem}.service-links a{font-weight:600;text-decoration:none}
   @media(max-width:720px){.condition-list,.care-grid{grid-template-columns:1fr}}
 </style>

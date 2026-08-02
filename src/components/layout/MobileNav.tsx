@@ -49,7 +49,7 @@ export default function MobileNav({ items, bookingUrl, currentPath }: Props) {
       .mobile-nav nav a { display:block; min-height:50px; padding:.8rem .2rem; color:var(--pine-deep); font:400 1.45rem/1.2 var(--font-display); text-decoration:none; }
       .mobile-nav nav a[aria-current="page"] { color:var(--dawn-ink); }
       .mobile-nav__book { min-height:46px; display:flex; align-items:center; justify-content:center; border-radius:999px; background:var(--dawn); color:var(--pine-deep); text-decoration:none; font-weight:600; }
-      @media(max-width:980px){ .mobile-nav{display:block;} }
+      @media(max-width:860px){ .mobile-nav{display:block;} }
     `}</style>
   </div>;
 }

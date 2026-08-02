@@ -10,7 +10,7 @@ const { services, showImages = true } = Astro.props;
   {services.map((service) => {
     const img = getServiceImage(service.slug, service.imagePath);
     return <Card class="service-card">
-      {showImages && <a class="service-image" href={`/services/${service.slug}`} tabindex="-1"><img src={img.src} srcset={img.srcSet || undefined} sizes="(max-width: 720px) 100vw, 33vw" width={img.width} height={img.height} alt={img.alt} loading="lazy" decoding="async" /></a>}
+      {showImages && <a class="service-image" href={`/services/${service.slug}`} tabindex="-1"><img src={img.src} srcset={img.srcSet || undefined} sizes="(max-width: 620px) calc(100vw - 2rem), (max-width: 900px) 50vw, 33vw" width={img.width} height={img.height} alt={img.alt} loading="lazy" decoding="async" style={`object-position:${img.position}`} /></a>}
       <div class="service-copy">
         <Badge>{service.serviceGroup === "specialized" ? "Specialized care" : "Service"}</Badge>
         <h3><a href={`/services/${service.slug}`}>{service.title}</a></h3>
@@ -23,7 +23,7 @@ const { services, showImages = true } = Astro.props;
 <style>
   .service-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: var(--space-md); }
   :global(.service-card) { padding: 0; overflow: hidden; }
-  .service-image { display: block; aspect-ratio: 16/10; overflow: hidden; background: var(--dawn-pale); }
+  .service-image { display: block; aspect-ratio: 4/3; overflow: hidden; background: var(--dawn-pale); }
   .service-image img { width: 100%; height: 100%; object-fit: cover; transition: transform .3s ease; }
   .service-image:hover img { transform: scale(1.025); }
   .service-copy { padding: 1.35rem; }

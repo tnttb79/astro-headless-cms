@@ -21,7 +21,7 @@ const pageTitle = title ? `${title} | ${settings.businessName}` : `${settings.bu
   </head>
   <body data-page-section={Astro.url.pathname === "/" ? "home" : Astro.url.pathname.split("/").filter(Boolean)[0] || "home"}>
     <a class="skip-link" href="#main-content">Skip to main content</a>
-    <Header settings={settings} currentPath={Astro.url.pathname} />
+    <Header settings={settings} locations={locations} currentPath={Astro.url.pathname} />
     <main id="main-content"><slot /></main>
     <Footer settings={settings} locations={locations} />
     <script>

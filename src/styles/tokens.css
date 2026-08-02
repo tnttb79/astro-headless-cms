@@ -9,7 +9,7 @@
   --surface: #ffffff;
   --line: #dcdfd8;
   --muted: color-mix(in srgb, var(--ridge) 65%, var(--ink));
-  --dawn-ink: color-mix(in srgb, var(--dawn) 58%, var(--pine-deep));
+  --dawn-ink: #874514;
   --error: color-mix(in srgb, var(--dawn) 42%, var(--ink));
   --success: var(--pine);
   --font-display: "Gowun Batang", Georgia, serif;
