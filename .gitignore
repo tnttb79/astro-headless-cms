@@ -12,9 +12,14 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# environment variables
+# environment variables (Wix stores private-app OAuth credentials in .env.local)
 .env
 .env.production
+.env.local
+.env.*.local
+
+# wix cli local state
+.wix/
 
 # macOS-generated files
 .DS_Store

@@ -1,0 +1,53 @@
+---
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import { getTreatmentBySlug, getSiteSettings } from "../../lib/wix/data";
+
+const { slug } = Astro.params;
+const [treatment, settings] = await Promise.all([
+  getTreatmentBySlug(slug ?? ""),
+  getSiteSettings(),
+]);
+
+// SSR route: resolve the slug at request time. Unknown slug → 404.
+if (!treatment) {
+  return new Response(null, { status: 404, statusText: "Treatment not found" });
+}
+---
+
+<SiteLayout title={treatment.title} description={treatment.shortDescription}>
+  <p class="crumb"><a href="/treatments">← All treatments</a></p>
+  <span class="tag">{treatment.category}</span>
+  <h1>{treatment.title}</h1>
+  <p class="lede">{treatment.shortDescription}</p>
+
+  <dl class="meta">
+    {treatment.duration && (<><dt>Duration</dt><dd>{treatment.duration}</dd></>)}
+    {treatment.price && (<><dt>Price</dt><dd>{treatment.price}</dd></>)}
+  </dl>
+
+  {treatment.description && <div class="prose" set:html={treatment.description} />}
+
+  {treatment.benefits && (
+    <section>
+      <h2>What to expect</h2>
+      <div class="prose" set:html={treatment.benefits} />
+    </section>
+  )}
+
+  <section class="cta">
+    <a class="btn" href={settings.bookingUrl}>Request this treatment</a>
+  </section>
+</SiteLayout>
+
+<style>
+  .crumb { font-size: 0.9rem; }
+  .tag { display: inline-block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--brand); background: #eaf1ee; padding: 0.15rem 0.5rem; border-radius: 999px; }
+  h1 { color: var(--brand-dark); margin: 0.5rem 0; }
+  .lede { color: var(--muted); font-size: 1.15rem; max-width: 62ch; }
+  .meta { display: flex; flex-wrap: wrap; gap: 0.35rem 1.5rem; margin: 1rem 0; }
+  .meta dt { font-weight: 600; color: var(--brand-dark); }
+  .meta dd { margin: 0 1.5rem 0 0.3rem; color: var(--muted); }
+  .prose { max-width: 65ch; }
+  h2 { color: var(--brand-dark); }
+  .cta { margin-top: 2rem; }
+</style>

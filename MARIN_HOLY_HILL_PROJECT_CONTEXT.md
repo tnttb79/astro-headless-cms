@@ -782,6 +782,68 @@ The skills run with full agent permissions and were flagged for review at instal
 
 ---
 
+# 11.2 Provisioned Wix project and integration points
+
+**Created August 1, 2026** by running the Wix Headless `connect` flow against this repository (logged in as `marinholyhillacu@gmail.com`).
+
+## Live project
+
+| Item | Value |
+|---|---|
+| Project / business name | Marin Holy Hill Acupuncture |
+| `siteId` | `c68648ed-1577-4028-86b1-7312970b1945` |
+| `appId` (public OAuth client id) | `6b6784ba-48b1-47bb-8a5a-86ddb8545b2f` |
+| Live URL (Wix host) | `https://marin-holy-17907997-marinholyhillacu.wix-site-host.com` |
+| Dashboard | `https://manage.wix.com/dashboard/c68648ed-1577-4028-86b1-7312970b1945` |
+
+The project was linked with `npm create @wix/new@latest -- headless link`, which wired `astro.config.mjs` (integrations `react()` + `wix()`, `output: 'server'`, `@wix/cloud-provider-fetch-adapter` for production, `static.wixstatic.com` image domain), rewrote `package.json` scripts to route through `wix` (`dev`/`build`/`preview`/`release`), created `.env.local` with the private-app OAuth credentials, and wrote `wix.config.json`. `.env.local` and `.wix/` are gitignored (they carry secrets/local state).
+
+> **Orphaned site to delete.** An earlier attempt used the lower-level `init` command, which provisioned a site but did **not** wire the Astro integration. That site was abandoned in favor of the `headless link` result. The user should delete the leftover business named after the folder (`siteId` `ca662f24-2101-45db-b1e6-d717ea15300e`) from `https://manage.wix.com/account/sites`.
+
+## Installed apps
+
+- **Wix Forms** (`appDefId 225dd912-7dea-4738-8688-4b8c6955ffc2`) — installed via the apps installer.
+- **Wix Data (CMS)** — core, no install required.
+
+## Seeded backend content
+
+Seeded by `scripts/wix-seed.mjs` (idempotent-ish one-time script; mints the CLI token at runtime, no secrets in repo). **All seeded copy is DRAFT, source-derived, and must be reviewed/approved before publishing** (see §17). No medical guarantees were written.
+
+CMS collections (public-read; native ids, no namespace):
+
+| Collection id | Fields | Seeded items |
+|---|---|---|
+| `Treatments` | `title, slug, category, shortDescription, description (RICH_TEXT/HTML), benefits (RICH_TEXT/HTML), price, duration, displayOrder, featured, published` | Acupuncture, Cupping & Moxibustion, Herbal Medicine |
+| `Conditions` | `title, slug, category, summary, description (RICH_TEXT/HTML), displayOrder, featured, published` | Neck & Shoulder Pain, Stress & Headaches, Insomnia |
+| `SiteSettings` | `businessName, doctorName, phone, email, address, weekdayHours, saturdayHours, sundayHours, bookingUrl, medicalDisclaimer` | 1 record (contact values from the redesign doc §5 — verify against the live site) |
+
+Contact form (Wix Forms, namespace `wix.form_app.form`):
+
+- **`formId`: `ef70c223-ff89-4a90-a784-9de20cc87b69`**
+- Field `target`s: `first_name`, `last_name`, `email`, `phone`, `message`.
+- `first_name`/`last_name`/`email`/`phone` carry `CONTACTS_*` identifiers and render in the Wix Forms dashboard; **`message` is a custom field** — its data is captured on every submission but it does **not** appear as a column in the dashboard summary (Wix Forms platform limitation). Submissions are still recorded in full.
+
+## Frontend integration (in this repo)
+
+- **Data access boundary:** `src/lib/wix/data.ts` — typed adapters `getSiteSettings()`, `getTreatments()`, `getTreatmentBySlug()`, `getConditions()` using `@wix/data` `items.query` (auto-auth, no client; every call guarded with a fallback).
+- **Domain types:** `src/types/content.ts` (pages bind to these, not to raw Wix shapes).
+- **Structural IDs:** `src/lib/wix/config.ts` (`CONTACT_FORM_ID`).
+- **Pages:** `src/pages/index.astro` (reads CMS), `src/pages/treatments/index.astro` + `[slug].astro`, `src/pages/contact.astro` (reads the live form schema and renders it schema-driven).
+- **Contact form:** `src/components/forms/ContactForm.tsx` (React island, schema-driven, client validation) → posts to `src/pages/api/contact.ts` (server route calls `@wix/forms` `submissions.createSubmission`; no request-body logging).
+- Installed SDK packages: `@wix/sdk`, `@wix/data`, `@wix/forms` (plus `@wix/astro`, `@astrojs/react` from linking).
+
+## Verified on the live site (post-release)
+
+Homepage renders seeded treatments/conditions from the CMS; `/treatments/acupuncture` renders the detail; `/contact` renders the schema-driven form. Contact submissions were not test-sent to avoid creating junk leads.
+
+## Remaining Wix inputs still owned by the user
+
+- Real approved content to replace the DRAFT seed (treatments, conditions, business details, plus any testimonials/pricing/insurance/FAQ collections not yet created).
+- Final booking CTA destination (currently `/contact` via `SiteSettings.bookingUrl`).
+- Custom domain connection, premium plan, analytics/GA4, and any Bookings setup — dashboard/account tasks.
+
+---
+
 # 12. Proposed Repository Structure
 
 The generated Wix project is the source of truth. Do not force this exact structure if Wix generates something different.

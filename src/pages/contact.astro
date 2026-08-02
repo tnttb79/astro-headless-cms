@@ -1,0 +1,78 @@
+---
+import SiteLayout from "../layouts/SiteLayout.astro";
+import ContactForm, { type FieldModel } from "../components/forms/ContactForm";
+import { getSiteSettings } from "../lib/wix/data";
+import { CONTACT_FORM_ID } from "../lib/wix/config";
+import { forms } from "@wix/forms";
+
+const settings = await getSiteSettings();
+
+// Read the live form schema (visitor token, no elevate) and project fields[].
+// Guarded so a failed read never white-screens the page (Caveat A3).
+let fields: FieldModel[] = [];
+try {
+  const form: any = await forms.getForm(CONTACT_FORM_ID);
+  fields = ((form?.fields ?? []) as any[])
+    .filter((f) => f.target && !f.hidden)
+    .map((f) => ({
+      target: f.target,
+      label: f.view?.label ?? f.target,
+      placeholder: f.view?.placeholder ?? "",
+      required: f.validation?.required ?? false,
+      format: f.validation?.string?.format,
+      minLength: f.validation?.string?.minLength,
+      maxLength: f.validation?.string?.maxLength,
+      pattern: f.validation?.string?.pattern,
+      viewFieldType: f.view?.fieldType,
+      options: f.view?.options?.map((o: any) => ({
+        value: o.value ?? o.label ?? "",
+        label: o.label ?? o.value ?? "",
+      })),
+    }));
+} catch (err) {
+  console.error("[wix] getForm(contact) failed:", err);
+}
+---
+
+<SiteLayout title="Contact" description="Get in touch with the clinic to ask a question or request an appointment.">
+  <h1>Contact us</h1>
+  <p class="lede">
+    Have a question or want to book a first visit? Send a message and we'll get back to you.
+  </p>
+
+  <div class="layout">
+    <div>
+      {fields.length === 0 ? (
+        <p class="empty">
+          Our contact form is temporarily unavailable. Please call
+          <a href={`tel:${settings.phone.replace(/[^\d+]/g, "")}`}>{settings.phone}</a> or email
+          <a href={`mailto:${settings.email}`}>{settings.email}</a>.
+        </p>
+      ) : (
+        <ContactForm client:load fields={fields} />
+      )}
+    </div>
+
+    <aside class="info">
+      <h2>Visit or call</h2>
+      <p>{settings.address}</p>
+      <p>
+        <a href={`tel:${settings.phone.replace(/[^\d+]/g, "")}`}>{settings.phone}</a><br />
+        <a href={`mailto:${settings.email}`}>{settings.email}</a>
+      </p>
+      <h3>Hours</h3>
+      <p>{settings.weekdayHours}<br />{settings.saturdayHours}<br />{settings.sundayHours}</p>
+    </aside>
+  </div>
+</SiteLayout>
+
+<style>
+  h1 { color: var(--brand-dark); }
+  .lede { color: var(--muted); font-size: 1.1rem; max-width: 60ch; }
+  .layout { display: grid; gap: 2rem; grid-template-columns: 2fr 1fr; align-items: start; }
+  @media (max-width: 720px) { .layout { grid-template-columns: 1fr; } }
+  .info { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.25rem; }
+  .info h2, .info h3 { color: var(--brand-dark); margin: 0 0 0.4rem; }
+  .info h3 { margin-top: 1rem; }
+  .empty { color: var(--muted); }
+</style>
