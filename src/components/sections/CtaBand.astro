@@ -1,0 +1,15 @@
+---
+import Button from "../ui/Button.astro";
+interface Props { bookingUrl: string; phone?: string; heading?: string; section?: string; }
+const { bookingUrl, phone, heading = "Ready to take the next step?", section = "cta_band" } = Astro.props;
+---
+<section class="cta-band"><div class="container inner"><div><h2>{heading}</h2><p>Book online, call the clinic, or send a message. We’ll help you choose the right next step.</p></div><div class="actions"><Button href={bookingUrl} external analyticsEvent="booking_click" analyticsSection={section}>Book an appointment</Button>{phone && <Button href={`tel:${phone.replace(/[^\d+]/g,"")}`} variant="ghost" analyticsEvent="phone_click" analyticsSection={section}>Call {phone}</Button>}</div></div></section>
+<style>
+  .cta-band { padding-block: var(--space-xl); background: var(--pine-deep); color: white; }
+  .inner { display: flex; align-items: center; justify-content: space-between; gap: var(--space-lg); }
+  h2 { color: white; }
+  p { max-width: 55ch; color: color-mix(in srgb, var(--surface) 80%, var(--pine)); }
+  .actions { display: flex; flex-wrap: wrap; gap: .7rem; flex-shrink: 0; }
+  .cta-band :global(.button--ghost) { color: white; }
+  @media (max-width: 760px) { .inner { display: block; } .actions { margin-top: 1.5rem; } }
+</style>

@@ -1,0 +1,20 @@
+---
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import Section from "../../components/ui/Section.astro";
+import Eyebrow from "../../components/ui/Eyebrow.astro";
+import ConditionCategoryGrid from "../../components/sections/ConditionCategoryGrid.astro";
+import CtaBand from "../../components/sections/CtaBand.astro";
+import { CONDITION_CATEGORIES } from "../../content/condition-categories";
+import { getConditions,getSiteSettings } from "../../lib/wix/data";
+const [conditions,settings]=await Promise.all([getConditions(),getSiteSettings()]);
+---
+<SiteLayout title="Conditions We Support" description="Browse supportive acupuncture and integrative care by condition category. Serious or changing symptoms need appropriate medical evaluation.">
+  <header class="page-hero container"><Eyebrow>Conditions</Eyebrow><h1>Start with what you’re experiencing.</h1><p class="lede">Use these categories to understand where acupuncture and integrative care may fit. A listing is not a promise of treatment or outcome, and it never replaces appropriate medical care.</p></header>
+  <Section tone="surface"><ConditionCategoryGrid categories={CONDITION_CATEGORIES} conditions={conditions} /></Section>
+  <Section><h2>All concerns by category</h2><div class="lists">{CONDITION_CATEGORIES.map((category)=>{const rows=conditions.filter((condition)=>condition.category===category.slug);return <section><h3><a href={`/conditions/${category.slug}`}>{category.title}</a></h3>{rows.length?<ul>{rows.map((condition)=><li><a href={`/conditions/${category.slug}`}>{condition.title}</a></li>)}</ul>:<p>Information is being prepared.</p>}</section>})}</div><p class="notice"><strong>Please seek medical evaluation</strong> for severe, sudden, persistent, or worsening symptoms. Call 911 for emergencies.</p></Section>
+  <CtaBand bookingUrl={settings.bookingUrl} phone={settings.phone} section="conditions_footer" />
+</SiteLayout>
+<style>
+  .lists{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-lg)}.lists h3 a{color:inherit;text-decoration:none}.lists li{margin:.45rem 0}.notice{margin-top:var(--space-lg)}
+  @media(max-width:800px){.lists{grid-template-columns:repeat(2,1fr)}}@media(max-width:520px){.lists{grid-template-columns:1fr}}
+</style>

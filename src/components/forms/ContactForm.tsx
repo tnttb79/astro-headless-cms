@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { track } from "../../lib/analytics";
 
 export interface FieldModel {
   target: string;
@@ -41,6 +42,12 @@ export default function ContactForm({ fields }: { fields: FieldModel[] }) {
   const [consent, setConsent] = useState(false);
   const [status, setStatus] = useState<Status>("idle");
   const [formError, setFormError] = useState("");
+  const started = useRef(false);
+  const errorSummary = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (formError || Object.keys(errors).length > 0) errorSummary.current?.focus();
+  }, [formError, errors]);
 
   const setValue = (target: string, v: string) => setValues((s) => ({ ...s, [target]: v }));
 
@@ -54,9 +61,14 @@ export default function ContactForm({ fields }: { fields: FieldModel[] }) {
       if (msg) nextErrors[f.target] = msg;
     }
     setErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) return;
+    if (Object.keys(nextErrors).length > 0) {
+      setFormError("Please correct the highlighted fields.");
+      track("form_failure", "contact_form_validation");
+      return;
+    }
     if (!consent) {
       setFormError("Please confirm you agree to be contacted.");
+      track("form_failure", "contact_form_consent");
       return;
     }
 
@@ -70,14 +82,17 @@ export default function ContactForm({ fields }: { fields: FieldModel[] }) {
       const data = await res.json();
       if (data.ok) {
         setStatus("success");
+        track("form_success", "contact_form");
       } else {
         setStatus("error");
         if (data.fieldErrors) setErrors(data.fieldErrors);
         setFormError(data.error ?? "Something went wrong.");
+        track("form_failure", "contact_form_server");
       }
     } catch {
       setStatus("error");
       setFormError("Network error. Please try again or call us.");
+      track("form_failure", "contact_form_network");
     }
   }
 
@@ -91,10 +106,18 @@ export default function ContactForm({ fields }: { fields: FieldModel[] }) {
   }
 
   return (
-    <form className="contact-form" onSubmit={onSubmit} noValidate>
+    <form className="contact-form" onSubmit={onSubmit} noValidate onFocus={() => { if (!started.current) { started.current = true; track("form_start", "contact_form"); } }}>
       <p className="notice">
         Please do not include private medical details or sensitive health information in this form.
       </p>
+
+      {(formError || Object.keys(errors).length > 0) && (
+        <div ref={errorSummary} className="error-summary" role="alert" aria-labelledby="error-summary-title" tabIndex={-1}>
+          <h3 id="error-summary-title">Please check the form</h3>
+          {formError && <p>{formError}</p>}
+          {Object.entries(errors).length > 0 && <ul>{Object.entries(errors).map(([target,message]) => <li key={target}><a href={`#${target}`}>{message}</a></li>)}</ul>}
+        </div>
+      )}
 
       {fields.map((field) => {
         const err = errors[field.target];
@@ -104,6 +127,7 @@ export default function ContactForm({ fields }: { fields: FieldModel[] }) {
           value: values[field.target] ?? "",
           required: field.required,
           "aria-invalid": err ? true : undefined,
+          "aria-describedby": err ? `${field.target}-error` : undefined,
           onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
             setValue(field.target, e.target.value),
         };
@@ -131,7 +155,7 @@ export default function ContactForm({ fields }: { fields: FieldModel[] }) {
                 pattern={field.pattern}
               />
             )}
-            {err && <p className="field-error">{err}</p>}
+            {err && <p className="field-error" id={`${field.target}-error`}>{err}</p>}
           </div>
         );
       })}
@@ -143,27 +167,29 @@ export default function ContactForm({ fields }: { fields: FieldModel[] }) {
         </label>
       </div>
 
-      {formError && <p className="form-error" role="alert">{formError}</p>}
-
-      <button className="btn" type="submit" disabled={status === "submitting"}>
+      <button className="submit" type="submit" disabled={status === "submitting"}>
         {status === "submitting" ? "Sending…" : "Send message"}
       </button>
 
       <style>{`
-        .contact-form { max-width: 34rem; }
-        .notice { background: #fff7e6; border: 1px solid #f0d9a8; border-radius: 10px; padding: 0.6rem 0.9rem; font-size: 0.88rem; color: #7a5c14; }
+        .contact-form { max-width: 40rem; }
+        .notice { background: var(--dawn-pale); border-left: 4px solid var(--dawn); padding: .8rem 1rem; font-size: .88rem; color: var(--pine-deep); }
+        .error-summary { margin: 1rem 0 1.4rem; padding: 1rem 1.2rem; border: 2px solid var(--error); border-radius: var(--radius-md); background: color-mix(in srgb, var(--surface) 92%, var(--dawn-pale)); }
+        .error-summary h3 { margin: 0 0 .35rem; font-size: 1.2rem; color: var(--error); }
+        .error-summary p { margin: 0 0 .4rem; }
+        .error-summary ul { margin: .4rem 0 0; }
         .field { margin-bottom: 1rem; }
-        .field label { display: block; font-weight: 600; margin-bottom: 0.3rem; color: #244a40; }
+        .field label { display: block; font-weight: 600; margin-bottom: 0.3rem; color: var(--pine-deep); }
         .field input, .field textarea, .field select {
-          width: 100%; padding: 0.6rem 0.7rem; border: 1px solid #cdd6d1; border-radius: 8px; font: inherit; background: #fff;
+          width: 100%; min-height: 46px; padding: 0.7rem 0.8rem; border: 1px solid var(--ridge); border-radius: var(--radius-sm); font: inherit; background: var(--surface);
         }
-        .field input[aria-invalid="true"], .field textarea[aria-invalid="true"] { border-color: #c0392b; }
-        .field-error { color: #c0392b; font-size: 0.85rem; margin: 0.3rem 0 0; }
-        .consent label { font-weight: 400; display: flex; align-items: center; gap: 0.3rem; }
-        .form-error { color: #c0392b; font-weight: 600; }
-        .form-success { background: #eaf1ee; border: 1px solid #bcd6cb; border-radius: 12px; padding: 1.25rem; }
-        .btn { background: #2f5d50; color: #fff; border: 0; padding: 0.7rem 1.3rem; border-radius: 999px; font-weight: 600; cursor: pointer; }
-        .btn:disabled { opacity: 0.6; cursor: default; }
+        .field textarea { min-height: 9rem; }
+        .field input[aria-invalid="true"], .field textarea[aria-invalid="true"], .field select[aria-invalid="true"] { border-color: var(--error); border-width: 2px; }
+        .field-error { color: var(--error); font-size: 0.85rem; margin: 0.3rem 0 0; }
+        .consent label { min-height: 44px; font-weight: 400; display: flex; align-items: center; gap: 0.3rem; }
+        .form-success { background: color-mix(in srgb, var(--surface) 88%, var(--paper)); border: 1px solid var(--success); border-radius: var(--radius-md); padding: 1.25rem; }
+        .submit { min-height: 46px; background: var(--dawn); color: var(--pine-deep); border: 0; padding: 0.75rem 1.35rem; border-radius: 999px; font-weight: 600; cursor: pointer; }
+        .submit:disabled { opacity: 0.6; cursor: default; }
       `}</style>
     </form>
   );

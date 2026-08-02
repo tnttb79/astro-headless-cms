@@ -1,0 +1,24 @@
+---
+import SiteLayout from "../layouts/SiteLayout.astro";
+import Section from "../components/ui/Section.astro";
+import Eyebrow from "../components/ui/Eyebrow.astro";
+import InsuranceGrid from "../components/sections/InsuranceGrid.astro";
+import PricingTable from "../components/sections/PricingTable.astro";
+import CtaBand from "../components/sections/CtaBand.astro";
+import Card from "../components/ui/Card.astro";
+import { getInsuranceProviders,getPricing,getSiteSettings } from "../lib/wix/data";
+const INSURANCE_NETWORK_VERIFIED=false;
+const [providers,pricing,settings]=await Promise.all([getInsuranceProviders(),getPricing(),getSiteSettings()]);
+---
+<SiteLayout title="VA, Insurance & Pricing" description="Learn about VA-authorized care, insurance benefit verification, motor-vehicle and workers’ compensation coordination, and draft clinic pricing.">
+  <header class="page-hero container"><Eyebrow>VA & Insurance</Eyebrow><h1>Clear options. Fewer surprises.</h1><p class="lede">We can help you understand next steps, but coverage, authorization, and reimbursement always depend on your individual plan.</p></header>
+  <Section tone="pine"><div class="va-grid"><div><Eyebrow>Veterans</Eyebrow><h2>VA-authorized acupuncture care</h2><p>The clinic describes itself as a VA acupuncture provider. VA care requires prior authorization before treatment begins.</p></div><ol><li>Contact your VA care team.</li><li>Request authorization for community acupuncture care.</li><li>Call us when the authorization is available so we can coordinate scheduling.</li></ol></div></Section>
+  <Section tone="surface"><Eyebrow>Benefits vary</Eyebrow><h2>Insurance we work with</h2><p class="lede">Network participation has not yet been independently verified for publication. Please confirm acupuncture benefits, visit limits, deductibles, copays, and authorization requirements directly with your insurer.</p><InsuranceGrid providers={providers} verified={INSURANCE_NETWORK_VERIFIED} /></Section>
+  <Section><Eyebrow>Other paths</Eyebrow><h2>Coverage and payment support</h2><div class="support-grid"><Card><h3>Auto injury</h3><p>Coverage may apply after a motor-vehicle accident. Documentation and billing support may be available.</p></Card><Card><h3>Workers’ compensation</h3><p>Coordination may be available when care is authorized under an active claim.</p></Card><Card><h3>HSA & FSA</h3><p>Eligible cards may be accepted, and itemized receipts can be provided.</p></Card><Card><h3>Out-of-network</h3><p>Patients may request a superbill for possible reimbursement. Payment is never guaranteed.</p></Card><Card><h3>Travel insurance</h3><p>Coverage varies. Confirm eligibility and claim requirements directly with your insurer.</p></Card><Card><h3>Payment choices</h3><p>Pay-per-visit and package plans may be available. Ask the clinic for current package details.</p></Card></div></Section>
+  <Section tone="surface"><Eyebrow>Draft pricing</Eyebrow><h2>Clinic fees</h2><p>Prices are draft and should be confirmed when scheduling. The clinic notes that new pricing takes effect January 1 each year.</p><PricingTable items={pricing} /></Section>
+  <CtaBand bookingUrl={settings.bookingUrl} phone={settings.phone} heading="Questions about authorization or benefits?" section="insurance_footer" />
+</SiteLayout>
+<style>
+  .va-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:var(--space-xl);align-items:center}.va-grid ol{margin:0}.va-grid li{margin:.8rem 0}.support-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-md)}.support-grid h3{font-size:var(--step-1)}.support-grid p{color:var(--muted)}
+  @media(max-width:800px){.va-grid,.support-grid{grid-template-columns:1fr}}
+</style>

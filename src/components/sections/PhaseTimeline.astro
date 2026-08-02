@@ -1,0 +1,14 @@
+---
+interface Phase { title: string; timing: string; text: string; }
+interface Props { phases: Phase[]; }
+const { phases } = Astro.props;
+---
+<ol class="timeline">{phases.map((phase,index) => <li><div class="marker">{index+1}</div><div><p class="timing">{phase.timing}</p><h3>{phase.title}</h3><p>{phase.text}</p></div></li>)}</ol>
+<style>
+  .timeline { list-style: none; margin: 0; padding: 0; }
+  li { position: relative; display: grid; grid-template-columns: 3rem 1fr; gap: 1.25rem; padding-bottom: 2rem; }
+  li:not(:last-child)::before { content: ""; position: absolute; top: 2.4rem; bottom: 0; left: 1.15rem; width: 1px; background: var(--line); }
+  .marker { position: relative; z-index: 1; width: 2.35rem; height: 2.35rem; display: grid; place-items: center; border-radius: 50%; background: var(--pine); color: white; font-family: var(--font-utility); }
+  .timing { margin: 0 0 .25rem; color: var(--dawn-ink); font: 500 var(--step--1)/1.4 var(--font-utility); text-transform: uppercase; }
+  h3 { margin-bottom: .4rem; }
+</style>

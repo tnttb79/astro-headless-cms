@@ -1,0 +1,24 @@
+---
+import SiteLayout from "../layouts/SiteLayout.astro";
+import Section from "../components/ui/Section.astro";
+import Eyebrow from "../components/ui/Eyebrow.astro";
+import ProcessSteps from "../components/sections/ProcessSteps.astro";
+import PhaseTimeline from "../components/sections/PhaseTimeline.astro";
+import CtaBand from "../components/sections/CtaBand.astro";
+import Card from "../components/ui/Card.astro";
+import { AFTERCARE,FIRST_VISIT_STEPS,TREATMENT_PHASES } from "../content/new-patient";
+import { SITE_IMAGES } from "../lib/images";
+import { getSiteSettings } from "../lib/wix/data";
+const settings=await getSiteSettings();
+---
+<SiteLayout title="New Patient Guide" description="Learn what to expect at your first acupuncture visit, how individualized treatment plans work, and practical aftercare guidance.">
+  <header class="page-hero container"><Eyebrow>New patient</Eyebrow><h1>Your first visit, clearly explained.</h1><p class="lede">Come as you are. We’ll take time to understand your concerns, explain each step, and build a plan around your needs.</p><nav class="anchor-nav" aria-label="On this page"><a href="#first-visit">First visit</a><a href="#treatment-plan">Treatment plan</a><a href="#aftercare">Aftercare</a></nav></header>
+  <Section id="first-visit" tone="surface"><div class="intro-grid"><div><Eyebrow>What to expect</Eyebrow><h2>Your first visit</h2><p class="lede">Plan to arrive 15 minutes early. Eat a light meal 1–2 hours beforehand, wear loose clothing, and leave room for a quiet period after treatment.</p></div><div class="image-frame"><img src={SITE_IMAGES.consultation.src} srcset={SITE_IMAGES.consultation.srcSet} sizes="(max-width:800px) 100vw, 48vw" width={SITE_IMAGES.consultation.width} height={SITE_IMAGES.consultation.height} alt={SITE_IMAGES.consultation.alt} loading="eager" decoding="async" /></div></div><ProcessSteps steps={FIRST_VISIT_STEPS} /></Section>
+  <Section id="treatment-plan"><div class="plan-grid"><div><Eyebrow>Individualized care</Eyebrow><h2>Your treatment plan</h2><p>Plans may combine acupuncture, cupping, moxibustion, manual therapy, and herbal medicine when appropriate. Improvement and visit frequency vary by person.</p><p class="notice">These time ranges are guidance, not promises. Dr. Kang reviews response and adjusts the plan with you.</p></div><PhaseTimeline phases={TREATMENT_PHASES} /></div></Section>
+  <Section id="aftercare" tone="surface"><Eyebrow>Post-treatment wellness</Eyebrow><h2>Aftercare guide</h2><div class="dos"><Card><h3>Helpful after your visit</h3><ul><li>Drink water and choose warm, easy-to-digest meals.</li><li>Rest and prioritize sleep.</li><li>Notice how your body responds.</li><li>Keep treated areas comfortable and warm when advised.</li></ul></Card><Card><h3>Usually best to avoid</h3><ul><li>High-intensity exercise immediately afterward.</li><li>Alcohol and excess stimulants.</li><li>Heavy or greasy meals.</li><li>Sudden cold exposure when advised against it.</li></ul></Card></div><div class="aftercare-grid">{AFTERCARE.map((item)=><article><h3>{item.title}</h3><p>{item.text}</p></article>)}</div><p class="notice"><strong>When to contact us:</strong> Call for persistent dizziness, discomfort that does not improve with rest, dosage questions, or schedule adjustments. Seek urgent medical care for severe or concerning symptoms.</p></Section>
+  <CtaBand bookingUrl={settings.bookingUrl} phone={settings.phone} heading="Ready for your first visit?" section="new_patient_footer" />
+</SiteLayout>
+<style>
+  .intro-grid,.plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(2rem,7vw,5rem);align-items:center;margin-bottom:var(--space-lg)}.image-frame{aspect-ratio:16/9}.image-frame img{width:100%;height:100%;object-fit:cover}.dos{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md)}.aftercare-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-md);margin:var(--space-lg) 0}.aftercare-grid article{padding-top:1.2rem;border-top:2px solid var(--dawn)}.aftercare-grid h3{font-size:var(--step-1)}.aftercare-grid p{color:var(--muted)}
+  @media(max-width:800px){.intro-grid,.plan-grid,.dos,.aftercare-grid{grid-template-columns:1fr}}
+</style>

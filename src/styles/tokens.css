@@ -1,0 +1,35 @@
+:root {
+  --ink: #1b211f;
+  --pine: #24463c;
+  --pine-deep: #16302a;
+  --ridge: #64798a;
+  --dawn: #e0873a;
+  --dawn-pale: #f7dfb8;
+  --paper: #f1f2ed;
+  --surface: #ffffff;
+  --line: #dcdfd8;
+  --muted: color-mix(in srgb, var(--ridge) 65%, var(--ink));
+  --dawn-ink: color-mix(in srgb, var(--dawn) 58%, var(--pine-deep));
+  --error: color-mix(in srgb, var(--dawn) 42%, var(--ink));
+  --success: var(--pine);
+  --font-display: "Gowun Batang", Georgia, serif;
+  --font-body: "IBM Plex Sans", Arial, sans-serif;
+  --font-utility: "IBM Plex Mono", monospace;
+  --step--1: clamp(0.82rem, 0.8rem + 0.08vw, 0.88rem);
+  --step-0: clamp(1rem, 0.96rem + 0.16vw, 1.08rem);
+  --step-1: clamp(1.25rem, 1.15rem + 0.4vw, 1.5rem);
+  --step-2: clamp(1.56rem, 1.36rem + 0.8vw, 2.05rem);
+  --step-3: clamp(1.95rem, 1.55rem + 1.5vw, 2.9rem);
+  --step-4: clamp(2.44rem, 1.8rem + 2.5vw, 4.2rem);
+  --space-xs: 0.5rem;
+  --space-sm: 0.85rem;
+  --space-md: 1.35rem;
+  --space-lg: 2.2rem;
+  --space-xl: clamp(3.2rem, 7vw, 6.5rem);
+  --radius-sm: 0.4rem;
+  --radius-md: 0.85rem;
+  --radius-lg: 1.4rem;
+  --shadow: 0 16px 45px rgb(27 33 31 / 0.08);
+  --max: 75rem;
+  --measure: 68ch;
+}

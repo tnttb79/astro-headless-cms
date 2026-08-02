@@ -1,7 +1,7 @@
 # Marin Holy Hill Acupuncture Website Redesign
 ## Project Context for the IDE Coding Agent
 
-**Status:** Active frontend build on a working Wix-managed Astro foundation  
+**Status:** Redesign, CMS migration, and Wix-host release complete; awaiting client content approval, one real form-submission QA check, and later custom-domain cutover
 **Last updated:** August 2, 2026  
 **Business:** Marin Holy Hill Acupuncture Clinic  
 **Current public site:** `https://www.marinholyhillacu.com/`  
@@ -441,11 +441,15 @@ Do not show social icons until real profile URLs are supplied.
 
 Keep page components independent from raw Wix objects. Use typed adapters in `src/lib/wix/`.
 
-Current collections:
+Current planned/live collections (the migration is idempotent and additive):
 
 - `Treatments`
 - `Conditions`
 - `SiteSettings`
+- `Locations`
+- `InsuranceProviders`
+- `Pricing`
+- `Testimonials`
 
 Expected additions or extensions:
 

@@ -2,9 +2,9 @@
 
 **Audience:** anyone (developer or not) who wants to understand how this application is built and how it runs.
 **Goal:** explain the whole system simply, but in enough detail that a developer can be productive.
-**Last updated:** August 1, 2026
+**Last updated:** August 2, 2026
 
-> For the *business* context (who Dr. Kang is, content scope, compliance rules) see `MARIN_HOLY_HILL_PROJECT_CONTEXT.md`.
+> For the *business* context (who Dr. Kang is, content scope, compliance rules) see `PROJECT_CONTEXT.md`.
 > For the *step-by-step process* an engineer or AI agent follows when building features, see `DEVELOPMENT.md`.
 
 ---
@@ -67,6 +67,7 @@ Practical consequence:
 - **"Add a new treatment"** → a content action in the Wix dashboard. No code, no deploy.
 - **"Add a new page or change the design"** → a code change + `wix release`.
 - **"Render a brand-new field or content type"** → both: schema change in Wix **and** a code change to display it.
+- **"Add a condition within an existing category"** → a Wix CMS content action. **Adding a seventh condition category** changes page structure in `src/content/condition-categories.ts` and therefore requires code + a release.
 
 ---
 
@@ -100,7 +101,7 @@ Rules of thumb:
 ### Reading content (CMS)
 
 ```
-Visitor requests  /treatments
+Visitor requests  /services
         │
         ▼
 Astro page runs on Wix's server (SSR)
@@ -151,11 +152,14 @@ holy-accupunture/
 │   ├── components/forms/
 │   │   └── ContactForm.tsx   # React island: schema-driven fields + client validation
 │   └── pages/
-│       ├── index.astro       # homepage (reads CMS)
-│       ├── contact.astro     # reads the live form schema, renders the form island
-│       ├── treatments/
-│       │   ├── index.astro   # treatments listing
-│       │   └── [slug].astro  # treatment detail (SSR route by slug)
+│       ├── index.astro       # ten-section homepage (reads CMS)
+│       ├── dr-kang.astro     # practitioner profile and care philosophy
+│       ├── new-patient.astro # first visit, treatment phases, aftercare
+│       ├── va-insurance.astro# VA, coverage, and pricing
+│       ├── contact.astro     # two locations + live form schema/form island
+│       ├── services/         # CMS listing + 14 SSR detail pages
+│       ├── conditions/       # grouped listing + six category pages
+│       ├── sitemap.xml.ts    # app sitemap response; Wix fronts it with its generated sitemap index
 │       └── api/
 │           └── contact.ts    # server route → creates a Wix Forms submission
 │
@@ -209,19 +213,15 @@ Division of labor: **developers build the experience; the dashboard runs the day
 
 ## 9. What is currently built vs. placeholder
 
-**Working end-to-end (the real value so far):**
+**Current released build:**
 - Repo linked to a live Wix site; auto-auth working.
-- CMS collections (`Treatments`, `Conditions`, `SiteSettings`) seeded and read live by the pages.
+- CMS collections (`Treatments`, `Conditions`, `SiteSettings`, `Locations`, `InsuranceProviders`, `Pricing`, `Testimonials`) are represented by typed guarded adapters and the idempotent migration in `scripts/wix-seed.mjs`.
 - Contact form seeded; the page reads its schema live and submits to Wix Forms via a server route.
-- Typed data-access layer and page templates in place; site built and released.
-
-**Still placeholder / to do:**
-- Visual design is minimal (basic theme, no real brand system, hero imagery, or the full homepage sequence).
-- Seeded copy is **draft and source-derived** — must be reviewed/approved (see the compliance rules in the context doc).
-- Missing pages: About / Meet Dr. Kang, New Patients, Insurance & Pricing, Conditions detail, Specialized Care.
-- Source images are not used yet (need review/consent).
-
-Think of the current state as **a working foundation plus one complete vertical slice**, ready for the design system and full page buildout to be layered on top.
+- The complete route set, design system, responsive images, SEO, accessibility behavior, analytics event map, and client/server form validation are implemented.
+- Source-derived medical, insurance, pricing, credential, and testimonial copy remains **draft** and is tracked page-by-page in `CONTENT_REVIEW.md`.
+- CMS migration is complete and independently verified. The production build passes and is published at the Wix host URL.
+- `@wix/astro-pages` registers the 20 concrete service/condition detail URLs so Wix's generated `pages-sitemap.xml` contains all 27 public HTML routes.
+- The live route, metadata, sitemap, robots, analytics, location, and invalid-form checks pass. Final business-copy approval and one real form-submission check remain client QA tasks; the old custom-domain site is untouched.
 
 ---
 

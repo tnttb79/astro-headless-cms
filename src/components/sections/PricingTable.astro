@@ -1,0 +1,15 @@
+---
+import type { PricingItem } from "../../types/content";
+interface Props { items: PricingItem[]; }
+const { items } = Astro.props;
+---
+{items.length ? <div class="table-wrap"><table><caption class="sr-only">Clinic service pricing</caption><thead><tr><th scope="col">Service</th><th scope="col">Price</th><th scope="col">Note</th></tr></thead><tbody>{items.map((item) => <tr><th scope="row">{item.serviceName}</th><td>{item.price}</td><td>{item.priceNote}</td></tr>)}</tbody></table></div> : <p class="empty-state">Please contact the clinic for current pricing.</p>}
+<style>
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
+  table { width: 100%; border-collapse: collapse; min-width: 42rem; }
+  th, td { padding: 1rem 1.2rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  thead th { background: var(--pine); color: white; font: 500 var(--step--1)/1.4 var(--font-utility); text-transform: uppercase; }
+  tbody th { color: var(--pine-deep); }
+  td:nth-child(2) { white-space: nowrap; font-family: var(--font-utility); color: var(--dawn-ink); }
+  tbody tr:last-child > * { border-bottom: 0; }
+</style>

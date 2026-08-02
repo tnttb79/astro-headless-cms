@@ -1,0 +1,13 @@
+---
+import type { Testimonial } from "../../types/content";
+interface Props { testimonials: Testimonial[]; }
+const { testimonials } = Astro.props;
+---
+{testimonials.length > 0 && <div class="testimonials">{testimonials.map((item) => <figure><blockquote>“{item.quote}”</blockquote><figcaption>{item.patientDisplayName}</figcaption></figure>)}</div>}
+<style>
+  .testimonials { display: grid; grid-template-columns: repeat(3,1fr); gap: var(--space-md); }
+  figure { margin: 0; padding: 1.5rem; background: var(--surface); border-top: 3px solid var(--dawn); }
+  blockquote { margin: 0 0 1.2rem; font-size: var(--step-1); }
+  figcaption { color: var(--muted); font: 500 var(--step--1)/1.4 var(--font-utility); }
+  @media (max-width: 800px) { .testimonials { grid-template-columns: 1fr; } }
+</style>

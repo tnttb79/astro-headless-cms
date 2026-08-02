@@ -1,0 +1,14 @@
+---
+import type { InsuranceProvider } from "../../types/content";
+import Card from "../ui/Card.astro";
+interface Props { providers: InsuranceProvider[]; verified?: boolean; }
+const { providers, verified = false } = Astro.props;
+---
+{providers.length ? <div class="insurance-grid">{providers.map((provider) => <Card><h3>{provider.providerName}</h3><p>{provider.coverageNote}</p><span>{verified && provider.networkStatus === "in_network" ? "In network" : "Please verify benefits"}</span></Card>)}</div> : <p class="empty-state">Please call the clinic to discuss your insurance plan.</p>}
+<style>
+  .insurance-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: var(--space-md); }
+  h3 { font-size: var(--step-1); }
+  p { color: var(--muted); }
+  span { color: var(--pine); font: 500 .72rem/1.4 var(--font-utility); text-transform: uppercase; }
+  @media (max-width: 800px) { .insurance-grid { grid-template-columns: 1fr; } }
+</style>

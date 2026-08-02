@@ -1,88 +1,44 @@
 ---
 import SiteLayout from "../layouts/SiteLayout.astro";
-import { getTreatments, getConditions, getSiteSettings } from "../lib/wix/data";
-
-const [settings, treatments, conditions] = await Promise.all([
-  getSiteSettings(),
-  getTreatments(),
-  getConditions(),
-]);
-
-const featuredTreatments = treatments.filter((t) => t.featured).slice(0, 3);
-const shownTreatments = featuredTreatments.length ? featuredTreatments : treatments.slice(0, 3);
+import Hero from "../components/sections/Hero.astro";
+import TrustStrip from "../components/sections/TrustStrip.astro";
+import ServiceGrid from "../components/sections/ServiceGrid.astro";
+import ConditionCategoryGrid from "../components/sections/ConditionCategoryGrid.astro";
+import ProcessSteps from "../components/sections/ProcessSteps.astro";
+import TestimonialRow from "../components/sections/TestimonialRow.astro";
+import LocationCard from "../components/sections/LocationCard.astro";
+import CtaBand from "../components/sections/CtaBand.astro";
+import Section from "../components/ui/Section.astro";
+import Eyebrow from "../components/ui/Eyebrow.astro";
+import Button from "../components/ui/Button.astro";
+import RidgelineDivider from "../components/ui/RidgelineDivider.astro";
+import JsonLd from "../components/layout/JsonLd.astro";
+import { CONDITION_CATEGORIES } from "../content/condition-categories";
+import { FIRST_VISIT_STEPS } from "../content/new-patient";
+import { HOME_CONTENT } from "../content/home";
+import { SITE_IMAGES } from "../lib/images";
+import { getConditions,getLocations,getSiteSettings,getTestimonials,getTreatments } from "../lib/wix/data";
+const [settings,services,conditions,locations,testimonials]=await Promise.all([getSiteSettings(),getTreatments(),getConditions(),getLocations(),getTestimonials()]);
+const featured=services.filter((service)=>service.featured).slice(0,6);
+const mesa=locations.find((location)=>location.slug==="mesa"&&location.status==="open");
+const structuredData=[{"@context":"https://schema.org","@type":"Person",name:settings.doctorName,jobTitle:"Acupuncturist",url:new URL("/dr-kang",Astro.url.origin).toString()},...(mesa?[{"@context":"https://schema.org","@type":"MedicalBusiness",name:settings.businessName,url:Astro.url.origin,telephone:mesa.phone,address:{"@type":"PostalAddress",streetAddress:[mesa.addressLine1,mesa.addressLine2].filter(Boolean).join(" "),addressLocality:mesa.city,addressRegion:mesa.state,postalCode:mesa.postalCode,addressCountry:"US"}}]:[])];
 ---
-
-<SiteLayout
-  title="Root-cause, whole-person acupuncture care"
-  description="Marin Holy Hill Acupuncture Clinic — third-generation, faith-based, whole-person care in Mesa, AZ."
->
-  <section class="hero">
-    <h1>Don't just treat the pain. Master your health.</h1>
-    <p class="lede">
-      {settings.businessName} offers root-cause, whole-person acupuncture care with
-      {settings.doctorName}. Every visit begins with careful listening and a personalized plan.
-    </p>
-    <a class="btn" href={settings.bookingUrl}>Request an appointment</a>
-  </section>
-
-  <section>
-    <h2>Featured treatments</h2>
-    {shownTreatments.length === 0 ? (
-      <p class="empty">Treatment information is being prepared. Please check back soon.</p>
-    ) : (
-      <div class="grid">
-        {shownTreatments.map((t) => (
-          <article class="card">
-            <span class="tag">{t.category}</span>
-            <h3><a href={`/treatments/${t.slug}`}>{t.title}</a></h3>
-            <p>{t.shortDescription}</p>
-            {t.price && <p class="meta">{t.price}</p>}
-          </article>
-        ))}
-      </div>
-    )}
-    <p><a href="/treatments">View all treatments →</a></p>
-  </section>
-
-  <section>
-    <h2>Conditions we help with</h2>
-    {conditions.length === 0 ? (
-      <p class="empty">Condition information is being prepared. Please check back soon.</p>
-    ) : (
-      <ul class="conditions">
-        {conditions.map((c) => (
-          <li>
-            <strong>{c.title}</strong>
-            <span class="tag">{c.category}</span>
-            <p>{c.summary}</p>
-          </li>
-        ))}
-      </ul>
-    )}
-  </section>
-
-  <section class="cta">
-    <h2>Ready to start?</h2>
-    <p>Have a question or want to book a first visit? We're happy to help.</p>
-    <a class="btn" href="/contact">Contact the clinic</a>
-  </section>
+<SiteLayout description="Personalized, third-generation acupuncture and integrative care from Dr. Hyo-won Kang in Mesa and Payson, Arizona.">
+  <JsonLd slot="head" data={structuredData} />
+  <Hero bookingUrl={settings.bookingUrl} phone={settings.phone} />
+  <TrustStrip />
+  <Section><div class="split"><div class="portrait image-frame"><img src={SITE_IMAGES.homeDoctor.src} srcset={SITE_IMAGES.homeDoctor.srcSet} sizes="(max-width:800px) 100vw, 42vw" width={SITE_IMAGES.homeDoctor.width} height={SITE_IMAGES.homeDoctor.height} alt={SITE_IMAGES.homeDoctor.alt} loading="lazy" decoding="async" /></div><div><Eyebrow>Meet Dr. Kang</Eyebrow><h2>Care shaped by lineage and listening.</h2><p class="lede">{HOME_CONTENT.doctor}</p><Button href="/dr-kang" variant="secondary" analyticsEvent="cta_click" analyticsSection="home_doctor">Meet Dr. Kang</Button></div></div></Section>
+  <RidgelineDivider />
+  <Section tone="surface"><Eyebrow>What we offer</Eyebrow><h2>Featured services</h2><p class="lede">A focused selection from our live services. Each plan is personalized after an assessment.</p><ServiceGrid services={featured.length?featured:services.slice(0,6)} /><div class="section-action"><Button href="/services" variant="ghost" analyticsEvent="cta_click" analyticsSection="home_services">View all services</Button></div></Section>
+  <Section><Eyebrow>What brings you in?</Eyebrow><h2>Explore by concern</h2><ConditionCategoryGrid categories={CONDITION_CATEGORIES} conditions={conditions} /></Section>
+  <Section tone="pine"><div class="split"><div><Eyebrow>Why Holy Hill</Eyebrow><h2>Personalized care, without promises.</h2><p class="lede">{HOME_CONTENT.why}</p><ul class="checks"><li>Third-generation traditional medicine heritage</li><li>28 years of clinical experience</li><li>Pulse diagnosis, palpation, and detailed history</li><li>Faith expressed with humility and welcome</li></ul></div><div class="image-frame wide"><img src={SITE_IMAGES.whyChoose.src} srcset={SITE_IMAGES.whyChoose.srcSet} sizes="(max-width:800px) 100vw, 45vw" width={SITE_IMAGES.whyChoose.width} height={SITE_IMAGES.whyChoose.height} alt={SITE_IMAGES.whyChoose.alt} loading="lazy" decoding="async" /></div></div></Section>
+  {testimonials.length > 0 && <Section tone="surface"><Eyebrow>Patient voices</Eyebrow><h2>Already shared by our patients</h2><TestimonialRow testimonials={testimonials} /><p class="testimonial-note">Testimonials describe individual experiences and do not promise similar results.</p></Section>}
+  <Section><div class="process-head"><div><Eyebrow>New patients</Eyebrow><h2>A clear first visit.</h2><p class="lede">{HOME_CONTENT.process}</p></div><Button href="/new-patient" variant="ghost" analyticsEvent="cta_click" analyticsSection="home_process">Read the full guide</Button></div><ProcessSteps steps={FIRST_VISIT_STEPS.slice(0,3)} /></Section>
+  <Section tone="dawn"><div class="insurance-preview"><div><Eyebrow>VA & insurance</Eyebrow><h2>Help navigating your benefits.</h2><p>VA care requires prior authorization. Other acupuncture benefits vary by plan, and network status should always be confirmed with your insurer.</p></div><Button href="/va-insurance" variant="secondary" analyticsEvent="cta_click" analyticsSection="home_insurance">VA, insurance & pricing</Button></div></Section>
+  <Section tone="surface"><Eyebrow>Find us</Eyebrow><h2>Mesa and Payson</h2>{locations.length?<div class="locations">{locations.map((location)=><LocationCard location={location} />)}</div>:<p class="empty-state">Location details are temporarily unavailable. Please call {settings.phone}.</p>}</Section>
+  <CtaBand bookingUrl={settings.bookingUrl} phone={settings.phone} heading="Begin with care that listens." section="home_footer" />
 </SiteLayout>
-
 <style>
-  .hero { padding: 1rem 0 2rem; border-bottom: 1px solid var(--line); margin-bottom: 2rem; }
-  .hero h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); line-height: 1.15; color: var(--brand-dark); margin: 0 0 0.75rem; }
-  .lede { font-size: 1.15rem; color: var(--muted); max-width: 60ch; }
-  section { margin-bottom: 2.5rem; }
-  h2 { color: var(--brand-dark); }
-  .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.25rem; }
-  .card h3 { margin: 0.4rem 0; }
-  .card h3 a { text-decoration: none; }
-  .tag { display: inline-block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--brand); background: #eaf1ee; padding: 0.15rem 0.5rem; border-radius: 999px; }
-  .meta { color: var(--muted); font-size: 0.9rem; }
-  .conditions { list-style: none; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-  .conditions li { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 1rem 1.25rem; }
-  .conditions p { margin: 0.4rem 0 0; color: var(--muted); font-size: 0.95rem; }
-  .empty { color: var(--muted); font-style: italic; }
-  .cta { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.5rem; text-align: center; }
+  .split{display:grid;grid-template-columns:.85fr 1.15fr;gap:clamp(2rem,7vw,6rem);align-items:center}.portrait{max-width:29rem;aspect-ratio:5/6}.portrait img,.wide img{width:100%;height:100%;object-fit:cover}.wide{aspect-ratio:4/3}.section-action{margin-top:var(--space-lg)}.checks{display:grid;gap:.65rem;padding:0;list-style:none}.checks li::before{content:"—";margin-right:.6rem;color:var(--dawn)}.testimonial-note{margin-top:1rem;color:var(--muted);font-size:var(--step--1)}.process-head,.insurance-preview{display:flex;align-items:end;justify-content:space-between;gap:var(--space-lg);margin-bottom:var(--space-lg)}.locations{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-md)}
+  @media(max-width:800px){.split,.locations{grid-template-columns:1fr}.process-head,.insurance-preview{display:block}.process-head :global(.button),.insurance-preview :global(.button){margin-top:1rem}}
 </style>

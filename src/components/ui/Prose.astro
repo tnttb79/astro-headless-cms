@@ -1,0 +1,12 @@
+---
+interface Props { html?: string; class?: string; }
+const { html, class: className = "" } = Astro.props;
+---
+<div class={`prose ${className}`} set:html={html}><slot /></div>
+<style>
+  .prose { max-width: var(--measure); }
+  .prose :global(h2), .prose :global(h3) { margin-top: 1.6em; }
+  .prose :global(li) { margin-block: .35rem; }
+  .prose :global(a) { font-weight: 600; }
+  .prose :global(blockquote) { margin: 1.5rem 0; padding-left: 1.2rem; border-left: 3px solid var(--dawn); font-size: var(--step-1); }
+</style>

@@ -1,0 +1,15 @@
+---
+interface Props { id?: string; tone?: "paper" | "surface" | "pine" | "dawn"; narrow?: boolean; class?: string; }
+const { id, tone = "paper", narrow = false, class: className = "" } = Astro.props;
+---
+<section id={id} class={`section section--${tone} ${className}`}>
+  <div class={narrow ? "narrow" : "container"}><slot /></div>
+</section>
+<style>
+  .section { padding-block: var(--space-xl); }
+  .section--surface { background: var(--surface); }
+  .section--pine { --eyebrow-color: var(--dawn); background: var(--pine-deep); color: color-mix(in srgb, var(--surface) 90%, var(--pine)); }
+  .section--pine :global(h2), .section--pine :global(h3), .section--pine :global(a) { color: white; }
+  .section--pine :global(.lede) { color: color-mix(in srgb, var(--surface) 82%, var(--pine)); }
+  .section--dawn { background: var(--dawn-pale); }
+</style>

@@ -1,0 +1,34 @@
+---
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import Breadcrumbs from "../../components/layout/Breadcrumbs.astro";
+import Section from "../../components/ui/Section.astro";
+import Eyebrow from "../../components/ui/Eyebrow.astro";
+import Prose from "../../components/ui/Prose.astro";
+import CtaBand from "../../components/sections/CtaBand.astro";
+import { getConditions, getServiceBySlug, getSiteSettings } from "../../lib/wix/data";
+import { getServiceImage } from "../../lib/images";
+import { CONDITION_CATEGORIES } from "../../content/condition-categories";
+const slug=Astro.params.slug ?? "";
+const [service,settings,conditions]=await Promise.all([getServiceBySlug(slug),getSiteSettings(),getConditions()]);
+if(!service) return new Response(null,{status:404,statusText:"Service not found"});
+const img=getServiceImage(service.slug,service.imagePath);
+const categorySlugs=CONDITION_CATEGORIES.filter((category)=>category.commonServices.includes(service.title)).map((category)=>category.slug);
+const related=conditions.filter((condition)=>categorySlugs.includes(condition.category)).slice(0,8);
+const title=service.seoTitle || service.title;
+const description=service.seoDescription || service.shortDescription;
+---
+<SiteLayout title={title} description={description} image={img.src}>
+  <header class="detail-hero"><div class="container detail-grid"><div><Breadcrumbs items={[{label:"Home",href:"/"},{label:"Services",href:"/services"},{label:service.title}]} /><Eyebrow>{service.serviceGroup === "specialized" ? "Specialized care" : "Clinic service"}</Eyebrow><h1>{service.title}</h1><p class="lede">{service.shortDescription}</p>{(service.price || service.duration) && <dl>{service.duration && <><dt>Visit</dt><dd>{service.duration}</dd></>}{service.price && <><dt>Price</dt><dd>{service.price}</dd></>}</dl>}</div><div class="image-frame"><img src={img.src} srcset={img.srcSet || undefined} sizes="(max-width:800px) 100vw, 50vw" width={img.width} height={img.height} alt={img.alt} loading="eager" decoding="async" /></div></div></header>
+  <Section tone="surface"><div class="copy-grid"><div><Eyebrow>Overview</Eyebrow><h2>About this service</h2><Prose html={service.description} /></div><div><Eyebrow>Approach</Eyebrow><h2>How it works</h2><Prose html={service.howItWorks} /></div></div></Section>
+  <Section><Eyebrow>Common uses</Eyebrow><h2>What it may help support</h2><Prose html={service.indications || service.benefits} />{related.length > 0 && <div class="related"><h3>Related concerns</h3><ul>{related.map((condition)=><li><a href={`/conditions/${condition.category}`}>{condition.title}</a></li>)}</ul></div>}{service.serviceGroup === "specialized" && <p class="notice"><strong>Supportive-care note:</strong> This service does not replace medical evaluation or treatment. Please involve the appropriate physician or specialist, especially for serious, persistent, or changing symptoms.</p>}</Section>
+  <CtaBand bookingUrl={settings.bookingUrl} phone={settings.phone} heading={`Ask whether ${service.title.toLowerCase()} is right for you.`} section={`service_${service.slug}`} />
+</SiteLayout>
+<style>
+  .detail-hero{padding-block:clamp(2.5rem,6vw,5rem);background:linear-gradient(135deg,var(--paper),var(--dawn-pale))}
+  .detail-grid,.copy-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(2rem,6vw,5rem);align-items:center}
+  .image-frame{aspect-ratio:4/3}.image-frame img{width:100%;height:100%;object-fit:cover}
+  dl{display:grid;grid-template-columns:auto 1fr;gap:.25rem 1rem;margin-top:1.5rem;font-size:var(--step--1)}dt{font-family:var(--font-utility);color:var(--pine)}dd{margin:0;color:var(--muted)}
+  .related{margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--line)}.related ul{display:flex;flex-wrap:wrap;gap:.5rem 1.4rem;list-style:none;padding:0}.related a{font-weight:600}
+  .notice{margin-top:2rem}
+  @media(max-width:800px){.detail-grid,.copy-grid{grid-template-columns:1fr}.detail-grid>div:first-child{order:2}}
+</style>

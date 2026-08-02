@@ -1,0 +1,18 @@
+---
+const items = [
+  ["03", "Third generation"],
+  ["28", "Years of experience"],
+  ["01:01", "Personalized care"],
+  ["02", "Mesa & Payson"],
+];
+---
+<section class="trust" aria-label="Clinic highlights"><div class="container"><ul>{items.map(([value,label]) => <li><strong>{value}</strong><span>{label}</span></li>)}</ul></div></section>
+<style>
+  .trust { padding: .5rem 0 2.5rem; }
+  ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4,1fr); border-block: 1px solid var(--line); }
+  li { display: flex; align-items: center; gap: .75rem; min-height: 5.4rem; padding: 1rem; border-right: 1px solid var(--line); }
+  li:last-child { border-right: 0; }
+  strong { color: var(--dawn-ink); font: 500 var(--step-1)/1 var(--font-utility); }
+  span { color: var(--pine-deep); font-size: var(--step--1); }
+  @media (max-width: 700px) { ul { grid-template-columns: repeat(2,1fr); } li:nth-child(2) { border-right: 0; } li:nth-child(-n+2) { border-bottom: 1px solid var(--line); } }
+</style>

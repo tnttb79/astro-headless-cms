@@ -2,11 +2,11 @@
 
 **Audience:** developers and AI coding agents building on this application.
 **Purpose:** a repeatable, safe process for making changes. Follow it top to bottom.
-**Last updated:** August 1, 2026
+**Last updated:** August 2, 2026
 
 > Read alongside:
 > - `ARCHITECTURE.md` — how the system works.
-> - `MARIN_HOLY_HILL_PROJECT_CONTEXT.md` — business context, scope boundary, and compliance rules (authoritative).
+> - `PROJECT_CONTEXT.md` — business context, scope boundary, and compliance rules (authoritative).
 > - `.agents/skills/wix-headless/SKILL.md` — the canonical, always-current Wix procedure. **When Wix mechanics here conflict with the skill or live Wix docs, the skill/docs win** (Wix APIs evolve).
 
 ---
@@ -118,6 +118,7 @@ Follow the skill. In short:
 - **Curation/nav/"featured" are live queries**, never hardcoded id/slug lists — so owner-added content appears automatically.
 - **Item/detail SEO:** any `[slug]` route that should let the owner control `<title>`/description needs the item-page SEO wiring (`@wix/seo`) — add it when SEO matters for that route.
 - Keep business details centralized in the `SiteSettings` collection; don't hardcode phone/email/hours across pages.
+- Wix's generated sitemap only includes concrete page-registry entries. When adding a new service or condition-category slug, also extend the canonical fallback/category data consumed by `astro.config.mjs`, then build and release so the URL enters `pages-sitemap.xml`.
 
 ---
 
@@ -139,7 +140,7 @@ Follow the skill. In short:
 | `siteId` | `c68648ed-1577-4028-86b1-7312970b1945` |
 | `appId` (public client id) | `6b6784ba-48b1-47bb-8a5a-86ddb8545b2f` |
 | Contact `formId` | `ef70c223-ff89-4a90-a784-9de20cc87b69` |
-| CMS collections | `Treatments`, `Conditions`, `SiteSettings` |
+| CMS collections | `Treatments`, `Conditions`, `SiteSettings`, `Locations`, `InsuranceProviders`, `Pricing`, `Testimonials` |
 | Wix Forms `appDefId` | `225dd912-7dea-4738-8688-4b8c6955ffc2` |
 | Live URL | `https://marin-holy-17907997-marinholyhillacu.wix-site-host.com` |
 | Dashboard | `https://manage.wix.com/dashboard/c68648ed-1577-4028-86b1-7312970b1945` |

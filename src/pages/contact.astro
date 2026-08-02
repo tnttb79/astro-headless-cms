@@ -1,78 +1,31 @@
 ---
 import SiteLayout from "../layouts/SiteLayout.astro";
-import ContactForm, { type FieldModel } from "../components/forms/ContactForm";
-import { getSiteSettings } from "../lib/wix/data";
+import ContactForm,{type FieldModel} from "../components/forms/ContactForm";
+import LocationCard from "../components/sections/LocationCard.astro";
+import Section from "../components/ui/Section.astro";
+import Eyebrow from "../components/ui/Eyebrow.astro";
+import Button from "../components/ui/Button.astro";
+import JsonLd from "../components/layout/JsonLd.astro";
+import { getLocations,getSiteSettings } from "../lib/wix/data";
 import { CONTACT_FORM_ID } from "../lib/wix/config";
 import { forms } from "@wix/forms";
-
-const settings = await getSiteSettings();
-
-// Read the live form schema (visitor token, no elevate) and project fields[].
-// Guarded so a failed read never white-screens the page (Caveat A3).
-let fields: FieldModel[] = [];
-try {
-  const form: any = await forms.getForm(CONTACT_FORM_ID);
-  fields = ((form?.fields ?? []) as any[])
-    .filter((f) => f.target && !f.hidden)
-    .map((f) => ({
-      target: f.target,
-      label: f.view?.label ?? f.target,
-      placeholder: f.view?.placeholder ?? "",
-      required: f.validation?.required ?? false,
-      format: f.validation?.string?.format,
-      minLength: f.validation?.string?.minLength,
-      maxLength: f.validation?.string?.maxLength,
-      pattern: f.validation?.string?.pattern,
-      viewFieldType: f.view?.fieldType,
-      options: f.view?.options?.map((o: any) => ({
-        value: o.value ?? o.label ?? "",
-        label: o.label ?? o.value ?? "",
-      })),
-    }));
-} catch (err) {
-  console.error("[wix] getForm(contact) failed:", err);
-}
+const [settings,locations]=await Promise.all([getSiteSettings(),getLocations()]);
+let fields:FieldModel[]=[];
+const fieldLimits:Record<string,number>={first_name:80,last_name:80,email:254,phone:40,message:2000};
+try{
+  const form:any=await forms.getForm(CONTACT_FORM_ID);
+  fields=((form?.fields??[]) as any[]).filter((field)=>field.target&&!field.hidden).map((field)=>({target:field.target,label:field.view?.label??field.target,placeholder:field.view?.placeholder??"",required:field.validation?.required??false,format:field.validation?.string?.format,minLength:field.validation?.string?.minLength,maxLength:field.validation?.string?.maxLength??fieldLimits[field.target],pattern:field.validation?.string?.pattern,viewFieldType:field.view?.fieldType,options:field.view?.options?.map((option:any)=>({value:option.value??option.label??"",label:option.label??option.value??""}))}));
+}catch(error){console.error("[wix] getForm(contact) failed",error)}
+const mesa=locations.find((location)=>location.slug==="mesa"&&location.status==="open");
+const localBusiness=mesa?{"@context":"https://schema.org","@type":"MedicalBusiness",name:settings.businessName,url:Astro.url.origin,telephone:mesa.phone,email:mesa.email,address:{"@type":"PostalAddress",streetAddress:[mesa.addressLine1,mesa.addressLine2].filter(Boolean).join(" "),addressLocality:mesa.city,addressRegion:mesa.state,postalCode:mesa.postalCode,addressCountry:"US"}}:null;
 ---
-
-<SiteLayout title="Contact" description="Get in touch with the clinic to ask a question or request an appointment.">
-  <h1>Contact us</h1>
-  <p class="lede">
-    Have a question or want to book a first visit? Send a message and we'll get back to you.
-  </p>
-
-  <div class="layout">
-    <div>
-      {fields.length === 0 ? (
-        <p class="empty">
-          Our contact form is temporarily unavailable. Please call
-          <a href={`tel:${settings.phone.replace(/[^\d+]/g, "")}`}>{settings.phone}</a> or email
-          <a href={`mailto:${settings.email}`}>{settings.email}</a>.
-        </p>
-      ) : (
-        <ContactForm client:load fields={fields} />
-      )}
-    </div>
-
-    <aside class="info">
-      <h2>Visit or call</h2>
-      <p>{settings.address}</p>
-      <p>
-        <a href={`tel:${settings.phone.replace(/[^\d+]/g, "")}`}>{settings.phone}</a><br />
-        <a href={`mailto:${settings.email}`}>{settings.email}</a>
-      </p>
-      <h3>Hours</h3>
-      <p>{settings.weekdayHours}<br />{settings.saturdayHours}<br />{settings.sundayHours}</p>
-    </aside>
-  </div>
+<SiteLayout title="Contact & Locations" description="Contact Marin Holy Hill Acupuncture Clinic in Mesa or Payson, get directions, call, book online, or send a general inquiry.">
+  {localBusiness && <JsonLd slot="head" data={localBusiness} />}
+  <header class="page-hero container"><Eyebrow>Contact</Eyebrow><h1>Two locations. One thoughtful next step.</h1><p class="lede">Book online, call either clinic, or use the form for a general question. Payson is opening soon.</p><div class="hero-actions"><Button href={settings.bookingUrl} external analyticsEvent="booking_click" analyticsSection="contact_hero">Book on Zocdoc</Button><Button href={`tel:${settings.phone.replace(/[^\d+]/g,"")}`} variant="ghost" analyticsEvent="phone_click" analyticsSection="contact_hero">Call Mesa</Button></div></header>
+  <Section tone="surface"><h2>Clinic locations</h2>{locations.length?<div class="locations">{locations.map((location)=><LocationCard location={location} />)}</div>:<p class="empty-state">Location information is temporarily unavailable. Please call {settings.phone}.</p>}</Section>
+  <Section><div class="contact-grid"><div><Eyebrow>General inquiry</Eyebrow><h2>Send a message</h2><p>Use this form for scheduling and general questions only.</p>{fields.length?<ContactForm client:load fields={fields} />:<p class="empty-state">Our form is temporarily unavailable. Please call <a href={`tel:${settings.phone.replace(/[^\d+]/g,"")}`}>{settings.phone}</a> or email <a href={`mailto:${settings.email}`}>{settings.email}</a>.</p>}</div><aside><h2>Prefer another route?</h2><p><strong>Book online</strong><br />Zocdoc opens in a new tab and handles appointment scheduling.</p><p><strong>Call the clinic</strong><br />We can answer general questions and help with scheduling.</p><p><strong>Email</strong><br /><a href={`mailto:${settings.email}`}>{settings.email}</a></p><p class="notice">Do not send urgent symptoms or sensitive health details by email or this form.</p></aside></div></Section>
 </SiteLayout>
-
 <style>
-  h1 { color: var(--brand-dark); }
-  .lede { color: var(--muted); font-size: 1.1rem; max-width: 60ch; }
-  .layout { display: grid; gap: 2rem; grid-template-columns: 2fr 1fr; align-items: start; }
-  @media (max-width: 720px) { .layout { grid-template-columns: 1fr; } }
-  .info { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.25rem; }
-  .info h2, .info h3 { color: var(--brand-dark); margin: 0 0 0.4rem; }
-  .info h3 { margin-top: 1rem; }
-  .empty { color: var(--muted); }
+  .hero-actions{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1.5rem}.locations{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-md)}.contact-grid{display:grid;grid-template-columns:1.5fr .75fr;gap:var(--space-xl);align-items:start}.contact-grid aside{padding:1.5rem;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg)}.contact-grid aside h2{font-size:var(--step-2)}
+  @media(max-width:760px){.locations,.contact-grid{grid-template-columns:1fr}}
 </style>

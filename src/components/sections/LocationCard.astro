@@ -1,0 +1,22 @@
+---
+import type { Location } from "../../types/content";
+import Badge from "../ui/Badge.astro";
+import Button from "../ui/Button.astro";
+interface Props { location: Location; }
+const { location } = Astro.props;
+const tel = location.phone.replace(/[^\d+]/g, "");
+---
+<article class="location-card">
+  <div class="location-card__head"><h3>{location.name}</h3>{location.status === "opening_soon" && <Badge>Opening soon</Badge>}</div>
+  <p>{location.addressLine1}{location.addressLine2 && <><br />{location.addressLine2}</>}<br />{location.city}, {location.state} {location.postalCode}</p>
+  <p><a href={`tel:${tel}`} data-analytics-event="phone_click" data-analytics-section={`location_${location.slug}`}>{location.phone}</a><br /><a href={`mailto:${location.email}`}>{location.email}</a></p>
+  {location.status === "open" && <div class="hours"><strong>Hours</strong><p>{location.weekdayHours}<br />{location.saturdayHours}<br />{location.sundayHours}</p></div>}
+  <div class="actions"><Button href={location.mapUrl} external variant="ghost" analyticsEvent="directions_click" analyticsSection={`location_${location.slug}`}>View map</Button><Button href={location.directionsUrl} external variant="secondary" analyticsEvent="directions_click" analyticsSection={`location_${location.slug}`}>Directions</Button></div>
+</article>
+<style>
+  .location-card { height: 100%; padding: clamp(1.35rem,3vw,2rem); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); }
+  .location-card__head { display: flex; align-items: start; justify-content: space-between; gap: 1rem; }
+  .hours { padding-top: 1rem; border-top: 1px solid var(--line); }
+  .hours p { color: var(--muted); }
+  .actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.4rem; }
+</style>

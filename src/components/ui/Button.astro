@@ -1,0 +1,30 @@
+---
+interface Props {
+  href?: string;
+  variant?: "primary" | "secondary" | "ghost";
+  external?: boolean;
+  analyticsEvent?: string;
+  analyticsSection?: string;
+  type?: "button" | "submit";
+  class?: string;
+}
+const { href, variant = "primary", external = false, analyticsEvent, analyticsSection, type = "button", class: className = "" } = Astro.props;
+const classes = `button button--${variant} ${className}`;
+---
+{href ? (
+  <a class={classes} href={href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined} data-analytics-event={analyticsEvent} data-analytics-section={analyticsSection}>
+    <slot />
+  </a>
+) : (
+  <button class={classes} type={type} data-analytics-event={analyticsEvent} data-analytics-section={analyticsSection}><slot /></button>
+)}
+<style>
+  .button { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: .45rem; padding: .72rem 1.15rem; border: 1px solid transparent; border-radius: 999px; font: 600 var(--step--1)/1 var(--font-body); text-decoration: none; cursor: pointer; transition: background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease; }
+  .button:hover { transform: translateY(-1px); }
+  .button--primary { background: var(--dawn); color: var(--pine-deep); }
+  .button--primary:hover { background: color-mix(in srgb, var(--dawn) 82%, var(--pine-deep)); color: var(--pine-deep); }
+  .button--secondary { background: var(--pine); color: white; }
+  .button--secondary:hover { background: var(--pine-deep); color: white; }
+  .button--ghost { border-color: currentColor; background: transparent; color: var(--pine); }
+  .button--ghost:hover { background: var(--surface); color: var(--pine-deep); }
+</style>

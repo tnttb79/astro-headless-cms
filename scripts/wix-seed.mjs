@@ -1,357 +1,148 @@
 /**
- * One-time Wix backend seed for Marin Holy Hill Acupuncture.
- *
- * Follows the installed wix-headless skill recipes:
- *   - CMS (Wix Data v2): public-read collections + bulk item insert + verify
- *   - Forms (Form Schemas v4): clean default form, create contact form, verify
- *
- * Token is minted at runtime from the logged-in Wix CLI session (no secrets in repo).
- * Content here is DRAFT, source-derived, and must be reviewed/approved before publishing
- * (see MARIN_HOLY_HILL_PROJECT_CONTEXT.md §17 compliance rules). No medical guarantees.
+ * Idempotent Wix CMS migration and content seed for the approved redesign.
+ * Source and compliance record: agent-context/PROJECT_CONTEXT.md and CONTENT_REVIEW.md.
+ * Existing rows are never deleted. Replaced placeholder rows are retained with published=false.
  */
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { randomUUID } from "node:crypto";
+import {
+  FALLBACK_CONDITIONS,
+  FALLBACK_INSURANCE,
+  FALLBACK_LOCATIONS,
+  FALLBACK_PRICING,
+  FALLBACK_SETTINGS,
+  FALLBACK_TESTIMONIALS,
+  FALLBACK_TREATMENTS,
+} from "../src/content/fallback-data.ts";
 
-const cfg = JSON.parse(readFileSync(new URL("../wix.config.json", import.meta.url)));
+const cfg = JSON.parse(readFileSync(new URL("../wix.config.json", import.meta.url), "utf8"));
 const SITE_ID = cfg.siteId;
-const TOKEN = execSync(`npx @wix/cli@latest token --site ${SITE_ID}`, {
-  encoding: "utf8",
-}).trim();
-
+const TOKEN = execFileSync("npx", ["@wix/cli@latest", "token", "--site", SITE_ID], { encoding: "utf8" }).trim();
 const BASE = "https://www.wixapis.com";
-const headers = {
-  Authorization: `Bearer ${TOKEN}`,
-  "wix-site-id": SITE_ID,
-  "Content-Type": "application/json",
-};
+const headers = { Authorization: `Bearer ${TOKEN}`, "wix-site-id": SITE_ID, "Content-Type": "application/json" };
+const PERMISSIONS = { insert: "ADMIN", update: "ADMIN", remove: "ADMIN", read: "ANYONE" };
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-async function call(method, path, body, { retryOnFresh = false } = {}) {
-  const doFetch = () =>
-    fetch(`${BASE}${path}`, {
-      method,
-      headers,
-      body: body ? JSON.stringify(body) : undefined,
-    });
-  let res = await doFetch();
-  if (retryOnFresh && (res.status === 403 || res.status === 400 || res.status >= 500)) {
-    await sleep(4000);
-    res = await doFetch();
+async function call(method, path, body, retry = true) {
+  const run = () => fetch(`${BASE}${path}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
+  let response = await run();
+  let raw = await response.text();
+  if (retry && (response.status === 403 || response.status >= 500 || (response.status === 400 && raw.includes("WDE0117")))) {
+    await sleep(2500);
+    response = await run();
+    raw = await response.text();
   }
-  const text = await res.text();
-  let json;
-  try {
-    json = text ? JSON.parse(text) : {};
-  } catch {
-    json = { raw: text };
-  }
-  return { status: res.status, json };
+  let json = {};
+  try { json = raw ? JSON.parse(raw) : {}; } catch { json = { raw }; }
+  if (!response.ok) throw new Error(`${method} ${path} returned ${response.status}: ${JSON.stringify(json)}`);
+  return json;
 }
 
-const PERM_PUBLIC = { insert: "ADMIN", update: "ADMIN", remove: "ADMIN", read: "ANYONE" };
+function stableId(collectionId, key) {
+  const hex = createHash("sha1").update(`${collectionId}:${key}`).digest("hex").slice(0, 32);
+  return `${hex.slice(0,8)}-${hex.slice(8,12)}-5${hex.slice(13,16)}-a${hex.slice(17,20)}-${hex.slice(20,32)}`;
+}
 
-const collections = [
-  {
-    id: "Treatments",
-    displayName: "Treatments",
-    fields: [
-      { key: "title", displayName: "Title", type: "TEXT" },
-      { key: "slug", displayName: "Slug", type: "TEXT" },
-      { key: "category", displayName: "Category", type: "TEXT" },
-      { key: "shortDescription", displayName: "Short Description", type: "TEXT" },
-      { key: "description", displayName: "Description", type: "RICH_TEXT" },
-      { key: "benefits", displayName: "Benefits", type: "RICH_TEXT" },
-      { key: "price", displayName: "Price", type: "TEXT" },
-      { key: "duration", displayName: "Duration", type: "TEXT" },
-      { key: "displayOrder", displayName: "Display Order", type: "NUMBER" },
-      { key: "featured", displayName: "Featured", type: "BOOLEAN" },
-      { key: "published", displayName: "Published", type: "BOOLEAN" },
-    ],
-    items: [
-      {
-        title: "Acupuncture",
-        slug: "acupuncture",
-        category: "Acupuncture",
-        shortDescription:
-          "Fine, sterile needles placed at specific points to support the body's natural balance and ease discomfort.",
-        description:
-          "<p>Acupuncture is a core practice of traditional Chinese medicine. Thin, single-use needles are gently placed at selected points to encourage circulation and support the body's own regulatory processes. Each session is tailored to the individual after a careful assessment.</p>",
-        benefits:
-          "<ul><li>Personalized, whole-person assessment</li><li>Gentle, single-use sterile needles</li><li>May help support comfort and everyday wellbeing</li></ul>",
-        price: "From $80 (initial visit $130)",
-        duration: "45–60 minutes",
-        displayOrder: 1,
-        featured: true,
-        published: true,
-      },
-      {
-        title: "Cupping & Moxibustion",
-        slug: "cupping-moxibustion",
-        category: "Holistic Therapies",
-        shortDescription:
-          "Traditional warming and suction techniques often used alongside acupuncture to support circulation and relaxation.",
-        description:
-          "<p>Cupping uses gentle suction on the skin, while moxibustion applies warmth from mugwort near specific points. Both are traditional techniques frequently combined with acupuncture as part of a personalized care plan.</p>",
-        benefits:
-          "<ul><li>Traditionally used to support circulation</li><li>Often combined with acupuncture</li><li>Relaxing, non-needle options available</li></ul>",
-        price: "From $50",
-        duration: "20–40 minutes",
-        displayOrder: 2,
-        featured: false,
-        published: true,
-      },
-      {
-        title: "Herbal Medicine",
-        slug: "herbal-medicine",
-        category: "Herbal Medicine",
-        shortDescription:
-          "Personalized traditional herbal formulas prepared to complement your treatment plan.",
-        description:
-          "<p>Herbal medicine uses time-honored formulas selected to suit each person. Dr. Kang reviews your health picture and lifestyle before recommending a personalized formula intended to complement in-clinic care.</p>",
-        benefits:
-          "<ul><li>Personalized traditional formulas</li><li>Complements in-clinic treatment</li><li>Guidance on safe, appropriate use</li></ul>",
-        price: "From $80 (ingredient dependent)",
-        duration: "Consultation based",
-        displayOrder: 3,
-        featured: true,
-        published: true,
-      },
-    ],
-  },
-  {
-    id: "Conditions",
-    displayName: "Conditions",
-    fields: [
-      { key: "title", displayName: "Title", type: "TEXT" },
-      { key: "slug", displayName: "Slug", type: "TEXT" },
-      { key: "category", displayName: "Category", type: "TEXT" },
-      { key: "summary", displayName: "Summary", type: "TEXT" },
-      { key: "description", displayName: "Description", type: "RICH_TEXT" },
-      { key: "displayOrder", displayName: "Display Order", type: "NUMBER" },
-      { key: "featured", displayName: "Featured", type: "BOOLEAN" },
-      { key: "published", displayName: "Published", type: "BOOLEAN" },
-    ],
-    items: [
-      {
-        title: "Neck & Shoulder Pain",
-        slug: "neck-shoulder-pain",
-        category: "Pain & Injury",
-        summary:
-          "Support for everyday neck and shoulder tension through a personalized, whole-person approach.",
-        description:
-          "<p>Neck and shoulder discomfort is one of the most common reasons people visit the clinic. After a careful assessment, Dr. Kang designs an individualized plan that may include acupuncture and complementary techniques to support comfort and mobility.</p>",
-        displayOrder: 1,
-        featured: true,
-        published: true,
-      },
-      {
-        title: "Stress & Headaches",
-        slug: "stress-headaches",
-        category: "Mental & Emotional Health",
-        summary:
-          "A calming, individualized approach for people managing everyday stress and tension headaches.",
-        description:
-          "<p>Everyday stress can affect sleep, focus, and physical comfort. Care is tailored to the whole person and may combine acupuncture with lifestyle guidance. This information is educational and is not a substitute for medical care.</p>",
-        displayOrder: 2,
-        featured: true,
-        published: true,
-      },
-      {
-        title: "Insomnia",
-        slug: "insomnia",
-        category: "Energy & Sleep",
-        summary:
-          "Gentle, personalized support for people looking to improve rest and daily energy.",
-        description:
-          "<p>Restful sleep supports overall wellbeing. Dr. Kang takes time to understand your patterns and builds an individualized plan. This content is for general education and does not replace advice from your physician.</p>",
-        displayOrder: 3,
-        featured: false,
-        published: true,
-      },
-    ],
-  },
-  {
-    id: "SiteSettings",
-    displayName: "Site Settings",
-    fields: [
-      { key: "businessName", displayName: "Business Name", type: "TEXT" },
-      { key: "doctorName", displayName: "Doctor Name", type: "TEXT" },
-      { key: "phone", displayName: "Phone", type: "TEXT" },
-      { key: "email", displayName: "Email", type: "TEXT" },
-      { key: "address", displayName: "Address", type: "TEXT" },
-      { key: "weekdayHours", displayName: "Weekday Hours", type: "TEXT" },
-      { key: "saturdayHours", displayName: "Saturday Hours", type: "TEXT" },
-      { key: "sundayHours", displayName: "Sunday Hours", type: "TEXT" },
-      { key: "bookingUrl", displayName: "Booking URL", type: "TEXT" },
-      { key: "medicalDisclaimer", displayName: "Medical Disclaimer", type: "TEXT" },
-    ],
-    items: [
-      {
-        businessName: "Marin Holy Hill Acupuncture Clinic",
-        doctorName: "Dr. Hyo-won Henry Kang",
-        phone: "(480) 730-4991",
-        email: "marinholyhillacu@gmail.com",
-        address: "1933 W. Main Street, Suite 1, Mesa, AZ 85201",
-        weekdayHours: "Mon–Fri: 8:30 AM – 6:00 PM",
-        saturdayHours: "Sat: 9:00 AM – 4:00 PM",
-        sundayHours: "Sun: Closed",
-        bookingUrl: "/contact",
-        medicalDisclaimer:
-          "The information on this website is for general education only and is not a substitute for professional medical advice, diagnosis, or treatment.",
-      },
-    ],
-  },
+const commonPublishFields = [
+  { key:"displayOrder",displayName:"Display Order",type:"NUMBER" },
+  { key:"published",displayName:"Published",type:"BOOLEAN" },
 ];
 
-async function seedCms() {
-  const result = {};
-  for (const c of collections) {
-    process.stdout.write(`\n[CMS] Creating collection "${c.id}"... `);
-    const create = await call(
-      "POST",
-      "/wix-data/v2/collections",
-      {
-        collection: {
-          id: c.id,
-          displayName: c.displayName,
-          fields: c.fields,
-          permissions: PERM_PUBLIC,
-        },
-      },
-      { retryOnFresh: true }
-    );
-    console.log(create.status);
-    if (create.status !== 200 && create.status !== 201) {
-      console.log("  create response:", JSON.stringify(create.json));
-    }
+const definitions = [
+  { id:"Treatments", displayName:"Treatments", fields:[
+    {key:"title",displayName:"Title",type:"TEXT"},{key:"slug",displayName:"Slug",type:"TEXT"},{key:"category",displayName:"Category",type:"TEXT"},{key:"serviceGroup",displayName:"Service Group",type:"TEXT"},{key:"shortDescription",displayName:"Short Description",type:"TEXT"},{key:"description",displayName:"Description",type:"RICH_TEXT"},{key:"howItWorks",displayName:"How It Works",type:"RICH_TEXT"},{key:"indications",displayName:"Indications",type:"RICH_TEXT"},{key:"benefits",displayName:"Benefits",type:"RICH_TEXT"},{key:"imagePath",displayName:"Image Path",type:"TEXT"},{key:"price",displayName:"Price",type:"TEXT"},{key:"duration",displayName:"Duration",type:"TEXT"},{key:"seoTitle",displayName:"SEO Title",type:"TEXT"},{key:"seoDescription",displayName:"SEO Description",type:"TEXT"},{key:"featured",displayName:"Featured",type:"BOOLEAN"},...commonPublishFields
+  ]},
+  { id:"Conditions", displayName:"Conditions", fields:[
+    {key:"title",displayName:"Title",type:"TEXT"},{key:"slug",displayName:"Slug",type:"TEXT"},{key:"category",displayName:"Category",type:"TEXT"},{key:"summary",displayName:"Summary",type:"TEXT"},{key:"description",displayName:"Description",type:"RICH_TEXT"},{key:"featured",displayName:"Featured",type:"BOOLEAN"},...commonPublishFields
+  ]},
+  { id:"SiteSettings", displayName:"Site Settings", fields:[
+    {key:"settingsKey",displayName:"Settings Key",type:"TEXT"},{key:"businessName",displayName:"Business Name",type:"TEXT"},{key:"doctorName",displayName:"Doctor Name",type:"TEXT"},{key:"yearsExperience",displayName:"Years Experience",type:"NUMBER"},{key:"phone",displayName:"Phone",type:"TEXT"},{key:"email",displayName:"Email",type:"TEXT"},{key:"bookingUrl",displayName:"Booking URL",type:"TEXT"},{key:"medicalDisclaimer",displayName:"Medical Disclaimer",type:"TEXT"},{key:"address",displayName:"Legacy Address",type:"TEXT"},{key:"weekdayHours",displayName:"Legacy Weekday Hours",type:"TEXT"},{key:"saturdayHours",displayName:"Legacy Saturday Hours",type:"TEXT"},{key:"sundayHours",displayName:"Legacy Sunday Hours",type:"TEXT"}
+  ]},
+  { id:"Locations", displayName:"Locations", fields:[
+    {key:"name",displayName:"Name",type:"TEXT"},{key:"slug",displayName:"Slug",type:"TEXT"},{key:"addressLine1",displayName:"Address Line 1",type:"TEXT"},{key:"addressLine2",displayName:"Address Line 2",type:"TEXT"},{key:"city",displayName:"City",type:"TEXT"},{key:"state",displayName:"State",type:"TEXT"},{key:"postalCode",displayName:"Postal Code",type:"TEXT"},{key:"phone",displayName:"Phone",type:"TEXT"},{key:"email",displayName:"Email",type:"TEXT"},{key:"weekdayHours",displayName:"Weekday Hours",type:"TEXT"},{key:"saturdayHours",displayName:"Saturday Hours",type:"TEXT"},{key:"sundayHours",displayName:"Sunday Hours",type:"TEXT"},{key:"mapUrl",displayName:"Map URL",type:"URL"},{key:"directionsUrl",displayName:"Directions URL",type:"URL"},{key:"status",displayName:"Status",type:"TEXT"},{key:"displayOrder",displayName:"Display Order",type:"NUMBER"},{key:"active",displayName:"Active",type:"BOOLEAN"}
+  ]},
+  { id:"InsuranceProviders", displayName:"Insurance Providers", fields:[
+    {key:"providerName",displayName:"Provider Name",type:"TEXT"},{key:"coverageNote",displayName:"Coverage Note",type:"TEXT"},{key:"networkStatus",displayName:"Network Status",type:"TEXT"},{key:"displayOrder",displayName:"Display Order",type:"NUMBER"},{key:"active",displayName:"Active",type:"BOOLEAN"},{key:"verifiedDate",displayName:"Verified Date",type:"TEXT"}
+  ]},
+  { id:"Pricing", displayName:"Pricing", fields:[
+    {key:"serviceName",displayName:"Service Name",type:"TEXT"},{key:"category",displayName:"Category",type:"TEXT"},{key:"price",displayName:"Price",type:"TEXT"},{key:"priceNote",displayName:"Price Note",type:"TEXT"},{key:"displayOrder",displayName:"Display Order",type:"NUMBER"},{key:"active",displayName:"Active",type:"BOOLEAN"}
+  ]},
+  { id:"Testimonials", displayName:"Testimonials", fields:[
+    {key:"patientDisplayName",displayName:"Patient Display Name",type:"TEXT"},{key:"quote",displayName:"Quote",type:"TEXT"},{key:"sourceNote",displayName:"Source Note",type:"TEXT"},{key:"consentConfirmed",displayName:"Consent Confirmed",type:"BOOLEAN"},{key:"displayOrder",displayName:"Display Order",type:"NUMBER"},{key:"published",displayName:"Published",type:"BOOLEAN"}
+  ]},
+];
 
-    process.stdout.write(`[CMS] Inserting ${c.items.length} item(s) into "${c.id}"... `);
-    const insert = await call(
-      "POST",
-      "/wix-data/v2/bulk/items/insert",
-      {
-        dataCollectionId: c.id,
-        dataItems: c.items.map((data) => ({ data })),
-        returnEntity: true,
-      },
-      { retryOnFresh: true }
-    );
-    console.log(insert.status);
-    const ids = (insert.json.results || []).map((r) => r.dataItem?.id).filter(Boolean);
-
-    const verify = await call("POST", "/wix-data/v2/items/query", {
-      dataCollectionId: c.id,
-    });
-    const count = verify.json.dataItems?.length ?? verify.json.items?.length ?? 0;
-    console.log(`[CMS] Verify "${c.id}": ${count} item(s) stored`);
-    result[c.id] = { collectionId: c.id, fieldKeys: c.fields.map((f) => f.key), itemIds: ids };
+async function ensureCollection(definition) {
+  const path = `/wix-data/v2/collections/${encodeURIComponent(definition.id)}`;
+  let existing;
+  try { existing = (await call("GET", path)).collection; }
+  catch (error) {
+    if (!String(error).includes("returned 404")) throw error;
+    await call("POST", "/wix-data/v2/collections", { collection:{ id:definition.id,displayName:definition.displayName,fields:definition.fields,permissions:PERMISSIONS } });
+    console.log(`[CMS] Created ${definition.id}`);
+    return;
   }
-  return result;
+  const keys = new Set((existing?.fields ?? []).map((field) => field.key));
+  for (const field of definition.fields.filter((candidate) => !keys.has(candidate.key))) {
+    await call("POST", "/wix-data/v2/collections/create-field", { dataCollectionId:definition.id,field });
+    console.log(`[CMS] Added ${definition.id}.${field.key}`);
+  }
 }
 
-async function seedForms() {
-  const NS = "wix.form_app.form";
-  process.stdout.write(`\n[Forms] Listing existing forms... `);
-  const list = await call("GET", `/form-schema-service/v4/forms?namespace=${NS}`);
-  console.log(list.status);
-  for (const f of list.json.forms || []) {
-    process.stdout.write(`[Forms] Deleting default form ${f.id}... `);
-    const del = await call("DELETE", `/form-schema-service/v4/forms/${f.id}`);
-    console.log(del.status);
-  }
-
-  const lc = () => randomUUID().toLowerCase();
-  const F_FIRST = lc(),
-    F_LAST = lc(),
-    F_EMAIL = lc(),
-    F_PHONE = lc(),
-    F_MSG = lc(),
-    SUBMIT = lc(),
-    STEP = lc();
-
-  const input = (id, identifier, target, label, { required = false, pii = false, format = "UNKNOWN_FORMAT" } = {}) => ({
-    id,
-    hidden: false,
-    identifier,
-    fieldType: "INPUT",
-    inputOptions: {
-      target,
-      pii,
-      required,
-      inputType: "STRING",
-      readOnly: false,
-      stringOptions: {
-        validation: { format, enum: [] },
-        componentType: "TEXT_INPUT",
-        textInputOptions: { label, showLabel: true },
-      },
-    },
-  });
-
-  const body = {
-    form: {
-      name: "Contact",
-      namespace: NS,
-      formFields: [
-        {
-          id: SUBMIT,
-          hidden: false,
-          identifier: "SUBMIT_BUTTON",
-          fieldType: "DISPLAY",
-          displayOptions: {
-            displayFieldType: "PAGE_NAVIGATION",
-            pageNavigationOptions: { nextPageText: "Next", previousPageText: "Back", submitText: "Send message" },
-          },
-        },
-        input(F_FIRST, "CONTACTS_FIRST_NAME", "first_name", "First name", { required: true, pii: true }),
-        input(F_LAST, "CONTACTS_LAST_NAME", "last_name", "Last name", { required: true, pii: true }),
-        input(F_EMAIL, "CONTACTS_EMAIL", "email", "Email", { required: true, pii: true, format: "EMAIL" }),
-        input(F_PHONE, "CONTACTS_PHONE", "phone", "Phone", { required: false, pii: true, format: "PHONE" }),
-        input(F_MSG, "message", "message", "How can we help?", { required: true }),
-      ],
-      steps: [
-        {
-          id: STEP,
-          name: "Page 1",
-          layout: {
-            large: {
-              items: [
-                { fieldId: F_FIRST, row: 0, column: 0, width: 6, height: 1 },
-                { fieldId: F_LAST, row: 0, column: 6, width: 6, height: 1 },
-                { fieldId: F_EMAIL, row: 1, column: 0, width: 6, height: 1 },
-                { fieldId: F_PHONE, row: 1, column: 6, width: 6, height: 1 },
-                { fieldId: F_MSG, row: 2, column: 0, width: 12, height: 1 },
-                { fieldId: SUBMIT, row: 3, column: 0, width: 12, height: 1 },
-              ],
-              sections: [],
-            },
-          },
-        },
-      ],
-      enabled: true,
-    },
-  };
-
-  process.stdout.write(`[Forms] Creating "Contact" form... `);
-  const create = await call("POST", "/form-schema-service/v4/forms", body, { retryOnFresh: true });
-  console.log(create.status);
-  if (create.status !== 200 && create.status !== 201) {
-    console.log("  create response:", JSON.stringify(create.json));
-    return null;
-  }
-  const formId = create.json.form?.id;
-  const targets = (create.json.form?.fields || []).map((f) => f.target).filter(Boolean);
-
-  const summary = await call("GET", `/form-schema-service/v4/forms/${formId}/summary`);
-  const summaryFields = summary.json.formSummary?.fields?.length ?? 0;
-  console.log(`[Forms] Verify: formId=${formId}, targets=[${targets.join(", ")}], dashboard fields=${summaryFields}`);
-  return { formId, targets };
+async function queryItems(collectionId) {
+  const result = await call("POST", "/wix-data/v2/items/query", { dataCollectionId:collectionId,query:{paging:{limit:100}} });
+  return result.dataItems ?? result.items ?? [];
 }
 
-const cms = await seedCms();
-const forms = await seedForms();
+async function saveItem(collectionId, id, data) {
+  return call("POST", "/wix-data/v2/items/save", { dataCollectionId:collectionId,dataItem:{id,data} });
+}
 
-console.log("\n===== SEED SUMMARY =====");
-console.log(JSON.stringify({ cms, forms }, null, 2));
+const legacyPlaceholderSlugs = {
+  Treatments:new Set(["acupuncture","cupping-moxibustion","herbal-medicine"]),
+  Conditions:new Set(["neck-shoulder-pain","stress-headaches","insomnia"]),
+};
+
+async function retireReplacedRows(collectionId, canonicalIds) {
+  const existing = await queryItems(collectionId);
+  const legacySlugs = legacyPlaceholderSlugs[collectionId] ?? new Set();
+  for (const row of existing.filter((item) => !canonicalIds.has(item.id) && legacySlugs.has(item.data?.slug) && item.data?.published !== false)) {
+    await call("PUT", `/wix-data/v2/items/${row.id}`, { dataCollectionId:collectionId,dataItem:{data:{...row.data,published:false}} });
+    console.log(`[CMS] Retained and unpublished ${collectionId}/${row.id}`);
+  }
+}
+
+const imagePathBySlug = Object.fromEntries([
+  ["acupuncture","acupuncture-neck-treatment.png"],["electro-acupuncture","electro-acupuncture-treatment.png"],["facial-acupuncture","facial-acupuncture-specialty.png"],["ear-acupuncture","auricular-acupuncture-ear.jpeg"],["moxibustion","moxibustion-therapy-back.png"],["medical-massage-met","medical-massage-met-treatment.png"],["lymphatic-massage","lymphatic-massage-treatment.png"],["herbal-medicine","herbal-medicine-ingredients.png"],["auto-injury-care","therapeutic-massage-treatment.png"],["colds-and-allergies","cold-and-allergies.png"],["weight-loss-support","weight-loss-support.png"],["constipation-support","constipation-support.png"],["fertility-support","fertility-support.png"],["oncology-support","oncology-acupuncture-support.png"],
+]);
+
+async function seedRows(collectionId, rows, keyOf, transform = (row) => row) {
+  const expected = new Map(rows.map((row) => [stableId(collectionId,keyOf(row)),transform(row)]));
+  if (collectionId === "Treatments" || collectionId === "Conditions") await retireReplacedRows(collectionId,new Set(expected.keys()));
+  for (const [id,data] of expected) await saveItem(collectionId,id,data);
+  const stored = await queryItems(collectionId);
+  for (const [id,data] of expected) {
+    const actual = stored.find((item) => item.id === id)?.data;
+    if (!actual) throw new Error(`[CMS] ${collectionId}/${id} did not persist`);
+    for (const key of Object.keys(data)) if (!(key in actual)) throw new Error(`[CMS] ${collectionId}/${id} missing field ${key}`);
+  }
+  console.log(`[CMS] Verified ${expected.size} canonical row(s) in ${collectionId}`);
+}
+
+for (const definition of definitions) await ensureCollection(definition);
+
+await seedRows("Treatments",FALLBACK_TREATMENTS,(row)=>row.slug,(row)=>{ const {id,...data}=row; return {...data,imagePath:imagePathBySlug[row.slug]??""}; });
+await seedRows("Conditions",FALLBACK_CONDITIONS,(row)=>row.slug,(row)=>{ const {id,...data}=row; return data; });
+
+const existingSettings = await queryItems("SiteSettings");
+const settingsId = existingSettings[0]?.id ?? stableId("SiteSettings","primary");
+await saveItem("SiteSettings",settingsId,{...existingSettings[0]?.data,settingsKey:"primary",...FALLBACK_SETTINGS});
+console.log("[CMS] Updated primary SiteSettings row");
+
+await seedRows("Locations",FALLBACK_LOCATIONS,(row)=>row.slug,(row)=>{const {id,...data}=row;return data;});
+await seedRows("InsuranceProviders",FALLBACK_INSURANCE,(row)=>row.providerName,(row)=>{const {id,...data}=row;return data;});
+await seedRows("Pricing",FALLBACK_PRICING,(row)=>row.serviceName,(row)=>{const {id,...data}=row;return data;});
+await seedRows("Testimonials",FALLBACK_TESTIMONIALS,(row)=>row.patientDisplayName,(row)=>{const {id,...data}=row;return {...data,consentConfirmed:false};});
+
+console.log("[CMS] Redesign migration and verification complete.");

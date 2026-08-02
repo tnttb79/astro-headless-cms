@@ -1,0 +1,27 @@
+---
+import type { Location, SiteSettings } from "../../types/content";
+interface Props { settings: SiteSettings; locations: Location[]; }
+const { settings, locations } = Astro.props;
+const year = new Date().getFullYear();
+---
+<footer class="site-footer"><div class="container">
+  <div class="footer-grid"><div><a class="footer-brand" href="/">{settings.businessName}</a><p>Traditional medicine interpreted through a modern lens, with personalized care for body, mind, and spirit.</p></div>
+  <div><h2>Explore</h2><ul><li><a href="/dr-kang">Dr. Kang</a></li><li><a href="/new-patient">New Patient</a></li><li><a href="/services">Services</a></li><li><a href="/conditions">Conditions</a></li><li><a href="/va-insurance">VA & Insurance</a></li></ul></div>
+  <div><h2>Locations</h2>{locations.map((location) => <p><strong>{location.name}</strong><br />{location.city}, {location.state}<br /><a href={`tel:${location.phone.replace(/[^\d+]/g,"")}`} data-analytics-event="phone_click" data-analytics-section="footer">{location.phone}</a>{location.status === "opening_soon" && <><br /><em>Opening soon</em></>}</p>)}</div>
+  <div><h2>Connect</h2><p><a href={`mailto:${settings.email}`}>{settings.email}</a></p><p><a href={settings.bookingUrl} target="_blank" rel="noopener noreferrer" data-analytics-event="booking_click" data-analytics-section="footer">Book on Zocdoc</a></p></div></div>
+  <p class="disclaimer">{settings.medicalDisclaimer}</p><p class="copyright">© {year} {settings.businessName}</p>
+</div></footer>
+<style>
+  .site-footer { padding: var(--space-xl) 0 2rem; background: var(--pine-deep); color: color-mix(in srgb, var(--surface) 84%, var(--pine)); }
+  .footer-grid { display: grid; grid-template-columns: 1.5fr repeat(3,1fr); gap: var(--space-lg); }
+  .footer-brand, h2, a { color: white; }
+  .footer-brand { font: 400 var(--step-2)/1.2 var(--font-display); text-decoration: none; }
+  h2 { font: 500 .72rem/1.4 var(--font-utility); letter-spacing: .1em; text-transform: uppercase; }
+  ul { list-style: none; padding: 0; }
+  li { margin-bottom: .45rem; }
+  p { font-size: var(--step--1); }
+  .disclaimer { max-width: 92ch; margin-top: var(--space-lg); padding-top: var(--space-md); border-top: 1px solid color-mix(in srgb, var(--surface) 18%, transparent); color: color-mix(in srgb, var(--surface) 70%, var(--pine)); }
+  .copyright { margin-bottom: 0; color: color-mix(in srgb, var(--surface) 60%, var(--pine)); }
+  @media (max-width: 850px) { .footer-grid { grid-template-columns: repeat(2,1fr); } }
+  @media (max-width: 520px) { .footer-grid { grid-template-columns: 1fr; } }
+</style>
