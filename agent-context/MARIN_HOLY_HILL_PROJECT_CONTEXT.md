@@ -10,6 +10,15 @@
 
 ---
 
+## Related project documents
+
+- **`ARCHITECTURE.md`** — how the whole application works (system overview, auth model, data flow, repo structure, hosting), written for any reader. Start here to understand the system.
+- **`DEVELOPMENT.md`** — the repeatable development process and recipes for building features (for developers and AI agents). Follow it when making changes.
+- **This document** — business context, brand, content scope, scope boundary, and the authoritative compliance/privacy rules.
+- **`.agents/skills/wix-headless/`** — the installed, always-current Wix Headless procedure the agent follows for backend/deploy operations.
+
+---
+
 ## Scope decision log
 
 **August 1, 2026 — Wix integration ownership expanded.**
