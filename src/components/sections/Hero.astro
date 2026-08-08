@@ -1,5 +1,5 @@
 ---
-import Button from "../ui/Button.astro";
+import BookingActions from "../ui/BookingActions.astro";
 import Eyebrow from "../ui/Eyebrow.astro";
 import RidgelineDivider from "../ui/RidgelineDivider.astro";
 import { SITE_IMAGES } from "../../lib/images";
@@ -13,10 +13,7 @@ const hero = SITE_IMAGES.homeHero;
     <Eyebrow>Third-generation care · Mesa & Payson</Eyebrow>
     <h1>Experienced care. Sincere attention.</h1>
     <p>Personalized acupuncture and integrative support from Dr. Hyo-won Kang, shaped by a third-generation tradition and 28 years of clinical experience.</p>
-    <div class="actions">
-      <Button href={bookingUrl} external analyticsEvent="booking_click" analyticsSection="home_hero">Book an appointment</Button>
-      <Button href="/contact" variant="ghost" analyticsEvent="cta_click" analyticsSection="home_hero">Contact Mesa &amp; Payson</Button>
-    </div>
+    <BookingActions bookingUrl={bookingUrl} section="home_hero" directVariant="ghost" class="hero-booking-actions" />
   </div>
 </section>
 <RidgelineDivider variant="hero" />
@@ -29,10 +26,10 @@ const hero = SITE_IMAGES.homeHero;
   .hero__content { position: relative; z-index: 1; padding-block: clamp(5rem, 10vw, 7rem); color: white; animation: reveal-copy .75s .18s ease-out both; }
   h1 { max-width: 13ch; color: white; }
   p { max-width: 47ch; font-size: var(--step-1); }
-  .actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.6rem; }
-  .hero :global(.button--ghost) { color: white; }
+  :global(.hero-booking-actions) { margin-top: 1.6rem; }
+  .hero :global(.hero-booking-actions .button--ghost) { color: white; }
   @keyframes reveal-image { from { opacity: .6; transform: scale(1.035); } to { opacity: 1; transform: scale(1); } }
   @keyframes reveal-copy { from { opacity: 0; transform: translateY(1rem); } to { opacity: 1; transform: none; } }
   @media (max-width: 760px) { .hero { min-height: 44rem; align-items: end; } .hero__media { top: 0; width: 100%; transform: none; } .shade { background: linear-gradient(0deg,var(--pine-deep) 0%,transparent 68%); } .hero__content { padding-block: 18rem 3.5rem; } }
-  @media (max-width: 560px) { .actions :global(.button) { width: 100%; } }
+  @media (max-width: 560px) { :global(.hero-booking-actions .button) { width: 100%; } }
 </style>

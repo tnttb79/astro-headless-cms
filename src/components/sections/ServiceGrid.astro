@@ -3,10 +3,11 @@ import type { Treatment } from "../../types/content";
 import Card from "../ui/Card.astro";
 import Badge from "../ui/Badge.astro";
 import { getServiceImage } from "../../lib/images";
-interface Props { services: Treatment[]; showImages?: boolean; }
-const { services, showImages = true } = Astro.props;
+interface Props { services: Treatment[]; showImages?: boolean; compact?: boolean; }
+const { services, showImages = true, compact = false } = Astro.props;
+const gridClass = compact ? "service-grid service-grid--compact" : "service-grid";
 ---
-{services.length ? <div class="service-grid">
+{services.length ? <div class={gridClass}>
   {services.map((service) => {
     const img = getServiceImage(service.slug, service.imagePath);
     return <Card class="service-card">
@@ -27,6 +28,10 @@ const { services, showImages = true } = Astro.props;
   .service-image img { width: 100%; height: 100%; object-fit: cover; transition: transform .3s ease; }
   .service-image:hover img { transform: scale(1.025); }
   .service-copy { padding: 1.35rem; }
+  .service-grid--compact .service-image { aspect-ratio: 16/9; }
+  .service-grid--compact .service-copy { padding: 1rem 1.2rem 1.2rem; }
+  .service-grid--compact h3 { font-size: clamp(1.4rem,1.2rem + .55vw,1.8rem); }
+  .service-grid--compact p { font-size: var(--step-0); line-height: 1.5; }
   h3 { margin-top: .75rem; }
   h3 a { color: inherit; text-decoration: none; }
   p { color: var(--muted); }

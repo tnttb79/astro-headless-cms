@@ -1,15 +1,15 @@
 ---
-import Button from "../ui/Button.astro";
+import BookingActions from "../ui/BookingActions.astro";
 interface Props { bookingUrl: string; heading?: string; section?: string; }
 const { bookingUrl, heading = "Ready to take the next step?", section = "cta_band" } = Astro.props;
 ---
-<section class="cta-band"><div class="container inner"><div><h2>{heading}</h2><p>Book online or choose a clinic to call, get directions, or send a general message.</p></div><div class="actions"><Button href={bookingUrl} external analyticsEvent="booking_click" analyticsSection={section}>Book an appointment</Button><Button href="/contact" variant="ghost" analyticsEvent="cta_click" analyticsSection={section}>Contact &amp; locations</Button></div></div></section>
+<section class="cta-band"><div class="container inner"><div><h2>{heading}</h2><p>Choose Zocdoc or book directly with the clinic.</p></div><BookingActions bookingUrl={bookingUrl} section={section} directVariant="ghost" class="cta-booking-actions" /></div></section>
 <style>
   .cta-band { padding-block: var(--space-xl); background: var(--pine-deep); color: white; }
   .inner { display: flex; align-items: center; justify-content: space-between; gap: var(--space-lg); }
   h2 { color: white; }
   p { max-width: 55ch; color: color-mix(in srgb, var(--surface) 80%, var(--pine)); }
-  .actions { display: flex; flex-wrap: wrap; gap: .7rem; flex-shrink: 0; }
-  .cta-band :global(.button--ghost) { color: white; }
-  @media (max-width: 760px) { .inner { display: block; } .actions { margin-top: 1.5rem; } }
+  :global(.cta-booking-actions) { flex-shrink: 0; }
+  .cta-band :global(.cta-booking-actions .button--ghost) { color: white; }
+  @media (max-width: 760px) { .inner { display: block; } :global(.cta-booking-actions) { margin-top: 1.5rem; } }
 </style>

@@ -32,7 +32,7 @@ export const SITE_IMAGES = {
   firstTreatment: image("dr-kang-acupuncture-home", 1448, 1086, "Dr. Kang during an acupuncture appointment"),
   acupuncture: image("acupuncture-neck-treatment", 1408, 768, "Acupuncture needles placed during a neck treatment", "center 44%"),
   "electro-acupuncture": image("dr-kang-acupuncture-about", 1448, 1086, "Dr. Kang selecting points during an acupuncture treatment", "center 42%"),
-  "facial-acupuncture": image("facial-healing-acupressure-treatment", 975, 532, "A focused facial treatment in the clinic", "center 42%"),
+  "facial-acupuncture": image("facial-acupuncture-treatment", 1024, 1024, "Split facial portrait illustrating facial acupuncture with fine needles"),
   "ear-acupuncture": image("auricular-acupuncture-ear", 1431, 1073, "Auricular acupuncture points on an ear"),
   moxibustion: image("moxibustion-therapy-closeup", 566, 535, "Moxibustion warming therapy", "center 55%"),
   "medical-massage-met": image("medical-massage-met-treatment", 1408, 768, "Medical massage and muscle energy technique treatment"),
@@ -54,6 +54,7 @@ export type SiteImageKey = keyof typeof SITE_IMAGES;
 const LOW_RESOLUTION_CMS_STEMS = new Set([
   "electro-acupuncture-treatment",
   "facial-acupuncture-specialty",
+  "facial-healing-acupressure-treatment",
   "moxibustion-therapy-back",
   "cold-and-allergies",
   "weight-loss-support",

@@ -114,7 +114,7 @@ async function retireReplacedRows(collectionId, canonicalIds) {
 }
 
 const imagePathBySlug = Object.fromEntries([
-  ["acupuncture","acupuncture-neck-treatment.png"],["electro-acupuncture","dr-kang-acupuncture-about.png"],["facial-acupuncture","facial-healing-acupressure-treatment.png"],["ear-acupuncture","auricular-acupuncture-ear.jpeg"],["moxibustion","moxibustion-therapy-closeup.png"],["medical-massage-met","medical-massage-met-treatment.png"],["lymphatic-massage","lymphatic-massage-treatment.png"],["herbal-medicine","herbal-medicine-ingredients.png"],["auto-injury-care","therapeutic-massage-treatment.png"],["colds-and-allergies","herbal-medicine-ingredients.png"],["weight-loss-support","tcm-formula-consultation.png"],["constipation-support","personalized-herbal-prescriptions.png"],["fertility-support","dr-kang-acupuncture-home.png"],["oncology-support","dr-kang-acupuncture-profile.png"],
+  ["acupuncture","acupuncture-neck-treatment.png"],["electro-acupuncture","dr-kang-acupuncture-about.png"],["facial-acupuncture","facial-acupuncture-treatment.png"],["ear-acupuncture","auricular-acupuncture-ear.jpeg"],["moxibustion","moxibustion-therapy-closeup.png"],["medical-massage-met","medical-massage-met-treatment.png"],["lymphatic-massage","lymphatic-massage-treatment.png"],["herbal-medicine","herbal-medicine-ingredients.png"],["auto-injury-care","therapeutic-massage-treatment.png"],["colds-and-allergies","herbal-medicine-ingredients.png"],["weight-loss-support","tcm-formula-consultation.png"],["constipation-support","personalized-herbal-prescriptions.png"],["fertility-support","dr-kang-acupuncture-home.png"],["oncology-support","dr-kang-acupuncture-profile.png"],
 ]);
 
 async function seedRows(collectionId, rows, keyOf, transform = (row) => row) {

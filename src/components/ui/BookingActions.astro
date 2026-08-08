@@ -1,0 +1,27 @@
+---
+import Button from "./Button.astro";
+import { DIRECT_BOOKING_PATH } from "../../lib/booking";
+
+type ButtonVariant = "primary" | "secondary" | "ghost";
+interface Props {
+  bookingUrl: string;
+  section: string;
+  zocdocVariant?: ButtonVariant;
+  directVariant?: ButtonVariant;
+  class?: string;
+}
+const {
+  bookingUrl,
+  section,
+  zocdocVariant = "primary",
+  directVariant = "secondary",
+  class: className = "",
+} = Astro.props;
+---
+<div class={`booking-actions ${className}`}>
+  <Button href={bookingUrl} external variant={zocdocVariant} analyticsEvent="booking_click" analyticsSection={`${section}_zocdoc`}>Book on Zocdoc</Button>
+  <Button href={DIRECT_BOOKING_PATH} variant={directVariant} analyticsEvent="booking_click" analyticsSection={`${section}_direct`}>Book directly</Button>
+</div>
+<style>
+  .booking-actions { display: flex; flex-wrap: wrap; gap: .7rem; }
+</style>

@@ -9,7 +9,7 @@
 *, *::before, *::after { box-sizing: border-box; }
 html {
   scroll-behavior: smooth;
-  scroll-snap-type: y mandatory;
+  scroll-snap-type: y proximity;
   background: var(--paper);
 }
 body {
@@ -28,6 +28,20 @@ main > .page-hero,
   scroll-margin-block-start: 8rem;
   scroll-snap-align: start;
   scroll-snap-stop: normal;
+}
+body[data-page-section="home"] main > .section { position: relative; }
+body[data-page-section="home"] main > .section--paper {
+  background: color-mix(in srgb, var(--paper) 92%, var(--ridge));
+}
+body[data-page-section="home"] main > .section + .section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: min(calc(100% - 2rem), var(--max));
+  height: 2px;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--dawn) 38%, var(--line)) 20%, color-mix(in srgb, var(--pine) 28%, var(--line)) 80%, transparent);
 }
 img { display: block; max-width: 100%; height: auto; }
 a { color: var(--pine); text-underline-offset: 0.18em; }

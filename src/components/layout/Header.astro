@@ -2,6 +2,7 @@
 import MobileNav from "./MobileNav";
 import Button from "../ui/Button.astro";
 import type { Location, SiteSettings } from "../../types/content";
+import { DIRECT_BOOKING_PATH } from "../../lib/booking";
 interface Props { settings: SiteSettings; locations: Location[]; currentPath: string; }
 const { settings, locations, currentPath } = Astro.props;
 const items = [
@@ -23,8 +24,8 @@ const items = [
   <div class="container header-inner">
   <a class="brand" href="/" aria-label={`${settings.businessName}, home`}><span>Holy Hill</span><small>Acupuncture Clinic</small></a>
   <nav class="desktop-nav" aria-label="Primary navigation"><ul>{items.map((item) => <li><a href={item.href} aria-current={currentPath === item.href || (item.href !== "/" && currentPath.startsWith(`${item.href}/`)) ? "page" : undefined}>{item.label}</a></li>)}</ul></nav>
-  <div class="desktop-book"><Button href={settings.bookingUrl} external analyticsEvent="booking_click" analyticsSection="desktop_header">Book</Button></div>
-  <div class="mobile-book"><Button href={settings.bookingUrl} external analyticsEvent="booking_click" analyticsSection="compact_header">Book</Button></div>
+  <div class="desktop-book"><Button href={settings.bookingUrl} external variant="ghost" analyticsEvent="booking_click" analyticsSection="desktop_header_zocdoc">Book on Zocdoc</Button><Button href={DIRECT_BOOKING_PATH} analyticsEvent="booking_click" analyticsSection="desktop_header_direct">Book directly</Button></div>
+  <div class="mobile-book"><Button href={DIRECT_BOOKING_PATH} analyticsEvent="booking_click" analyticsSection="compact_header_direct">Book directly</Button></div>
   <MobileNav client:load items={items} bookingUrl={settings.bookingUrl} currentPath={currentPath} />
   </div>
 </header>
@@ -47,8 +48,11 @@ const items = [
   ul { display: flex; align-items: center; gap: clamp(.45rem,1vw,1rem); list-style: none; margin: 0; padding: 0; }
   .desktop-nav a { min-height: 44px; display: inline-flex; align-items: center; color: var(--ink); font-size: clamp(.76rem,.72rem + .12vw,.84rem); font-weight: 500; text-decoration: none; white-space: nowrap; }
   .desktop-nav a:hover, .desktop-nav a[aria-current="page"] { color: var(--dawn-ink); }
+  .desktop-book { display: flex; align-items: center; gap: .45rem; }
+  .desktop-book :global(.button) { padding-inline: .9rem; }
   .mobile-book { display: none; margin-left: auto; }
-  @media (max-width: 860px) { .desktop-nav, .desktop-book { display: none; } .mobile-book { display: block; } .brand { margin-right: 0; } .clinic-links { display: none; } .clinic-links-compact { display: inline; flex-shrink: 0; font-size: .75rem; } }
+  @media (max-width: 1160px) { .desktop-nav, .desktop-book { display: none; } .mobile-book { display: block; } .clinic-links { display: none; } .clinic-links-compact { display: inline; flex-shrink: 0; font-size: .75rem; } }
   @media (max-width: 560px) { .access-inner { gap: .6rem; } .va-access__full { display: none; } .va-access__compact { display: inline; } }
-  @media (max-width: 420px) { .header-inner { gap: .5rem; } .brand span { font-size: 1.18rem; } .brand small { font-size: .52rem; } .mobile-book :global(.button) { padding-inline: .85rem; } }
+  @media (max-width: 460px) { .mobile-book { display: none; } }
+  @media (max-width: 420px) { .header-inner { gap: .5rem; } .brand span { font-size: 1.18rem; } .brand small { font-size: .52rem; } }
 </style>

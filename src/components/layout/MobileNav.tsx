@@ -33,7 +33,10 @@ export default function MobileNav({ items, bookingUrl, currentPath }: Props) {
         <nav aria-label="Mobile navigation"><ul>
           {items.map((item) => <li key={item.href}><a href={item.href} aria-current={currentPath === item.href ? "page" : undefined}>{item.label}</a></li>)}
         </ul></nav>
-        <a className="mobile-nav__book" href={bookingUrl} target="_blank" rel="noopener noreferrer" data-analytics-event="booking_click" data-analytics-section="mobile_header">Book an appointment</a>
+        <div className="mobile-nav__booking-actions">
+          <a className="mobile-nav__book mobile-nav__book--zocdoc" href={bookingUrl} target="_blank" rel="noopener noreferrer" data-analytics-event="booking_click" data-analytics-section="mobile_header_zocdoc">Book on Zocdoc</a>
+          <a className="mobile-nav__book mobile-nav__book--direct" href="/book" data-analytics-event="booking_click" data-analytics-section="mobile_header_direct">Book directly</a>
+        </div>
       </div>
     </div>,
     document.body,
@@ -54,8 +57,11 @@ export default function MobileNav({ items, bookingUrl, currentPath }: Props) {
       .mobile-nav li { border-bottom:1px solid var(--line); }
       .mobile-nav nav a { display:block; min-height:50px; padding:.8rem .2rem; color:var(--pine-deep); font:400 1.45rem/1.2 var(--font-display); text-decoration:none; }
       .mobile-nav nav a[aria-current="page"] { color:var(--dawn-ink); }
-      .mobile-nav__book { min-height:46px; display:flex; align-items:center; justify-content:center; border-radius:999px; background:var(--dawn); color:var(--pine-deep); text-decoration:none; font-weight:600; }
-      @media(max-width:860px){ .mobile-nav{display:block;} }
+      .mobile-nav__booking-actions { display:grid; gap:.7rem; }
+      .mobile-nav__book { min-height:46px; display:flex; align-items:center; justify-content:center; border:1px solid transparent; border-radius:999px; color:var(--pine-deep); text-decoration:none; font-weight:600; }
+      .mobile-nav__book--zocdoc { background:var(--dawn); }
+      .mobile-nav__book--direct { border-color:var(--pine); background:var(--surface); }
+      @media(max-width:1160px){ .mobile-nav{display:block;} }
     `}</style>
   </div>;
 }
