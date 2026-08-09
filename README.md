@@ -8,7 +8,7 @@ An anonymized case study of a custom Astro application combining a server-render
 ![Server rendered](https://img.shields.io/badge/rendering-SSR-16302A)
 [![Google Calendar API](https://img.shields.io/badge/Google_Calendar-API-4285F4?logo=googlecalendar&logoColor=white)](https://developers.google.com/calendar/api)
 
-> The customer identity, production domain, business content, and operational identifiers are intentionally omitted. See the [interactive architecture walkthrough](https://thangta.net/technical-architecture) for a visual presentation of the system.
+> The customer identity, production domain, business content, and operational identifiers are intentionally omitted. See the [interactive architecture walkthrough](https://thangta.net/healthcare-booking-system) for a visual presentation of the system.
 
 ## Overview
 
