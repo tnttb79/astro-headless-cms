@@ -1,10 +1,12 @@
 import { items } from "@wix/data";
-import type { Condition, InsuranceProvider, Location, PricingItem, SiteSettings, Testimonial, Treatment } from "../../types/content";
-import { FALLBACK_CONDITIONS, FALLBACK_INSURANCE, FALLBACK_LOCATIONS, FALLBACK_PRICING, FALLBACK_SETTINGS, FALLBACK_TREATMENTS } from "../../content/fallback-data";
+import type { BookableService, BookingSettings, BusinessHour, CalendarConfigEntry, Closure, Condition, InsuranceProvider, Location, PricingItem, SiteSettings, Testimonial, Treatment } from "../../types/content";
+import { FALLBACK_BOOKABLE_SERVICES, FALLBACK_BOOKING_SETTINGS, FALLBACK_BUSINESS_HOURS, FALLBACK_CALENDAR_CONFIG, FALLBACK_CLOSURES, FALLBACK_CONDITIONS, FALLBACK_INSURANCE, FALLBACK_LOCATIONS, FALLBACK_PRICING, FALLBACK_SETTINGS, FALLBACK_TREATMENTS } from "../../content/fallback-data";
 
 const COLLECTIONS = {
   treatments: "Treatments", conditions: "Conditions", siteSettings: "SiteSettings", locations: "Locations",
   insurance: "InsuranceProviders", pricing: "Pricing", testimonials: "Testimonials",
+  bookableServices: "BookableServices", calendarConfig: "CalendarConfig", businessHours: "BusinessHours",
+  closures: "Closures", bookingSettings: "BookingSettings",
 } as const;
 
 const text = (value: unknown): string => typeof value === "string" ? value : "";
@@ -62,4 +64,35 @@ export async function getPricing():Promise<PricingItem[]> {
 export async function getTestimonials():Promise<Testimonial[]> {
   try { const {items:rows}=await items.query(COLLECTIONS.testimonials).eq("published",true).eq("consentConfirmed",true).ascending("displayOrder").limit(20).find(); return rows.map(toTestimonial); }
   catch(error){ console.error("[wix] getTestimonials failed",error); return []; }
+}
+
+// ── Direct-booking config adapters (visitor-scoped reads; guarded + fallback) ──
+function toBookableService(item:any):BookableService { return { id:text(item._id), key:text(item.key), label:text(item.label), allowsFirstTime:bool(item.allowsFirstTime,true), allowsExisting:bool(item.allowsExisting,true), displayOrder:number(item.displayOrder), active:bool(item.active,true) }; }
+function toCalendarConfig(item:any):CalendarConfigEntry { return { id:text(item._id), category:text(item.category), label:text(item.label), googleCalendarId:text(item.googleCalendarId), countsAsBusy:bool(item.countsAsBusy), active:bool(item.active,true), displayOrder:number(item.displayOrder) }; }
+function toBusinessHour(item:any):BusinessHour { return { id:text(item._id), location:text(item.location), weekday:number(item.weekday), openTime:text(item.openTime), closeTime:text(item.closeTime), active:bool(item.active,true) }; }
+function toClosure(item:any):Closure { return { id:text(item._id), location:text(item.location), startDate:text(item.startDate), endDate:text(item.endDate), reason:text(item.reason), active:bool(item.active,true) }; }
+
+export async function getBookableServices():Promise<BookableService[]> {
+  try { const {items:rows}=await items.query(COLLECTIONS.bookableServices).eq("active",true).ascending("displayOrder").limit(50).find(); return rows.length ? rows.map(toBookableService) : FALLBACK_BOOKABLE_SERVICES; }
+  catch(error){ console.error("[wix] getBookableServices failed",error); return FALLBACK_BOOKABLE_SERVICES; }
+}
+export async function getCalendarConfig():Promise<CalendarConfigEntry[]> {
+  try { const {items:rows}=await items.query(COLLECTIONS.calendarConfig).eq("active",true).ascending("displayOrder").limit(50).find(); return rows.length ? rows.map(toCalendarConfig) : FALLBACK_CALENDAR_CONFIG; }
+  catch(error){ console.error("[wix] getCalendarConfig failed",error); return FALLBACK_CALENDAR_CONFIG; }
+}
+export async function getBusinessHours(location?:string):Promise<BusinessHour[]> {
+  try { let q=items.query(COLLECTIONS.businessHours).eq("active",true); if(location) q=q.eq("location",location); const {items:rows}=await q.ascending("weekday").limit(100).find(); return rows.length ? rows.map(toBusinessHour) : FALLBACK_BUSINESS_HOURS.filter((h)=>!location||h.location===location); }
+  catch(error){ console.error("[wix] getBusinessHours failed",error); return FALLBACK_BUSINESS_HOURS.filter((h)=>!location||h.location===location); }
+}
+export async function getClosures(location?:string):Promise<Closure[]> {
+  try { const {items:rows}=await items.query(COLLECTIONS.closures).eq("active",true).limit(200).find(); const mapped=rows.map(toClosure); return location ? mapped.filter((c)=>c.location===location||c.location==="all") : mapped; }
+  catch(error){ console.error("[wix] getClosures failed",error); return FALLBACK_CLOSURES; }
+}
+export async function getBookingSettings():Promise<BookingSettings> {
+  try {
+    const {items:rows}=await items.query(COLLECTIONS.bookingSettings).limit(5).find();
+    const row:any=rows.find((r:any)=>r.settingsKey==="primary") ?? rows[0];
+    if(!row) return FALLBACK_BOOKING_SETTINGS;
+    return { slotMinutes:number(row.slotMinutes,FALLBACK_BOOKING_SETTINGS.slotMinutes), minLeadMinutes:number(row.minLeadMinutes,FALLBACK_BOOKING_SETTINGS.minLeadMinutes), maxAdvanceDays:number(row.maxAdvanceDays,FALLBACK_BOOKING_SETTINGS.maxAdvanceDays), cancellationPolicyText:text(row.cancellationPolicyText)||FALLBACK_BOOKING_SETTINGS.cancellationPolicyText };
+  } catch(error){ console.error("[wix] getBookingSettings failed",error); return FALLBACK_BOOKING_SETTINGS; }
 }

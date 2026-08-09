@@ -91,3 +91,79 @@ export interface Testimonial {
   displayOrder: number;
   published: boolean;
 }
+
+// ── Direct-booking domain types ────────────────────────────────────────────
+// Backing collections and behavior are documented in
+// agent-context/WIP/agent_21/PLAN.md. All maintainable values are CMS-driven.
+
+/** A service a patient can pick in the Book Directly wizard. */
+export interface BookableService {
+  id: string;
+  key: string; // "acupuncture" | "cupping" | "herbal" | "met"
+  label: string;
+  allowsFirstTime: boolean;
+  allowsExisting: boolean;
+  displayOrder: number;
+  active: boolean;
+}
+
+/** Maps an internal calendar category to a real Google Calendar id + role. */
+export interface CalendarConfigEntry {
+  id: string;
+  category: string; // "NEW_PATIENT" | "ACUPUNCTURE" | "CA_VA_HERB_ETC" | "INSURANCE" | "RESCHEDULE" | "PERSONAL"
+  label: string;
+  googleCalendarId: string;
+  countsAsBusy: boolean; // included in freeBusy availability checks
+  active: boolean;
+  displayOrder: number;
+}
+
+/** One open window for a location on a given weekday (Phoenix local time). */
+export interface BusinessHour {
+  id: string;
+  location: string; // location slug
+  weekday: number; // 0=Sun .. 6=Sat
+  openTime: string; // "HH:mm"
+  closeTime: string; // "HH:mm"
+  active: boolean;
+}
+
+/** A holiday or manual closed-date exception. */
+export interface Closure {
+  id: string;
+  location: string; // location slug or "all"
+  startDate: string; // "YYYY-MM-DD" (inclusive)
+  endDate: string; // "YYYY-MM-DD" (inclusive)
+  reason: string;
+  active: boolean;
+}
+
+/** Global booking behavior; editable in the Wix dashboard. */
+export interface BookingSettings {
+  slotMinutes: number;
+  minLeadMinutes: number;
+  maxAdvanceDays: number;
+  cancellationPolicyText: string;
+}
+
+/** A structured website booking record (ADMIN-read; contains PII). */
+export interface Appointment {
+  id: string;
+  patientType: string; // "first_time" | "existing"
+  service: string; // BookableService.key
+  location: string; // location slug
+  name: string;
+  email: string;
+  phone: string;
+  insuranceCompany: string;
+  insuranceId: string;
+  dateOfBirth: string;
+  message: string;
+  startTime: string; // UTC ISO
+  endTime: string; // UTC ISO
+  googleCalendarId: string;
+  googleEventId: string;
+  status: string; // "pending" | "booked" | "failed" | "cancelled"
+  referenceId: string;
+  createdAt: string; // UTC ISO
+}

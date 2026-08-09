@@ -1,4 +1,4 @@
-import type { Condition, InsuranceProvider, Location, PricingItem, SiteSettings, Testimonial, Treatment } from "../types/content";
+import type { BookableService, BookingSettings, BusinessHour, CalendarConfigEntry, Closure, Condition, InsuranceProvider, Location, PricingItem, SiteSettings, Testimonial, Treatment } from "../types/content";
 
 export const FALLBACK_SETTINGS: SiteSettings = {
   businessName: "Marin Holy Hill Acupuncture Clinic",
@@ -59,3 +59,44 @@ export const FALLBACK_TESTIMONIALS: Testimonial[] = [
   { id:"fallback-devin", patientDisplayName:"Devin L.", quote:"Dr.Kang is a magical man. He is able to identify and heal injuries and ailments that have gone unsolved and untreated by others. He's shown me a deep level of attentive care and personalized treatment every time I've seen him, helping to address a wide scope of concerns i've come to him with. Incredibly knowledgeable, generous and a genuine healer.", sourceNote:"Previously published on the clinic’s live Wix site.", consentConfirmed:false, displayOrder:2, published:true },
   { id:"fallback-natasha", patientDisplayName:"Natasha Larson", quote:"He helped my teenage son with his anxiety and panic disorder! It was like a miracle it went from 15 attacks a day to attack free\nThank you very much!", sourceNote:"Previously published on the clinic’s live Wix site.", consentConfirmed:false, displayOrder:3, published:true },
 ];
+
+// ── Direct-booking fallbacks ───────────────────────────────────────────────
+// These mirror the CMS seed rows (scripts/wix-seed.mjs) so pages/routes still
+// work if a Wix read fails. Real Google Calendar ids are confirmed values —
+// see agent-context/WIP/agent_21/PLAN.md.
+
+const bookable = (key: string, label: string, order: number): BookableService =>
+  ({ id:`fallback-svc-${key}`, key, label, allowsFirstTime:true, allowsExisting:true, displayOrder:order, active:true });
+export const FALLBACK_BOOKABLE_SERVICES: BookableService[] = [
+  bookable("acupuncture","Acupuncture",1),
+  bookable("cupping","Cupping Therapy",2),
+  bookable("herbal","Herbal Medicine",3),
+  bookable("met","Medical Massage (MET)",4),
+];
+
+const calCfg = (category: string, label: string, googleCalendarId: string, countsAsBusy: boolean, order: number): CalendarConfigEntry =>
+  ({ id:`fallback-cal-${category}`, category, label, googleCalendarId, countsAsBusy, active:true, displayOrder:order });
+export const FALLBACK_CALENDAR_CONFIG: CalendarConfigEntry[] = [
+  calCfg("NEW_PATIENT","New Patient","05f0e2b82241b7ae61d3bc426bf5644785048ddeb1ba8ea5688003eb3680d123@group.calendar.google.com",true,1),
+  calCfg("ACUPUNCTURE","Acupuncture","marinholyhillacu@gmail.com",true,2),
+  calCfg("CA_VA_HERB_ETC","CA, VA, Herb, Etc.","633c5c3d44a76886ce997c136d28a2067b2cde47f2eef0349a0326d815086ce0@group.calendar.google.com",true,3),
+  calCfg("INSURANCE","Insurance","5dd73177b27637183694425f7352a0ce939d6215049a4b178ac3d3686e208d3f@group.calendar.google.com",true,4),
+  calCfg("RESCHEDULE","Reschedule","9df651109780d417ae5296e5ea10331368b7301bb1298f8c9c90432e48e44ba6@group.calendar.google.com",true,5),
+];
+
+const hours = (location: string, weekday: number, openTime: string, closeTime: string): BusinessHour =>
+  ({ id:`fallback-hours-${location}-${weekday}`, location, weekday, openTime, closeTime, active:true });
+export const FALLBACK_BUSINESS_HOURS: BusinessHour[] = [
+  hours("mesa",1,"08:30","18:00"), hours("mesa",2,"08:30","18:00"), hours("mesa",3,"08:30","18:00"),
+  hours("mesa",4,"08:30","18:00"), hours("mesa",5,"08:30","18:00"), hours("mesa",6,"09:00","16:00"),
+  // Sunday (0) closed = no row. Payson hours not supplied.
+];
+
+export const FALLBACK_CLOSURES: Closure[] = [];
+
+export const FALLBACK_BOOKING_SETTINGS: BookingSettings = {
+  slotMinutes: 15,
+  minLeadMinutes: 120,
+  maxAdvanceDays: 45,
+  cancellationPolicyText: "For cancellations, please contact us 24 hours in advance.",
+};

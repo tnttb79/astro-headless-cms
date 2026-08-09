@@ -7,6 +7,11 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import {
+  FALLBACK_BOOKABLE_SERVICES,
+  FALLBACK_BOOKING_SETTINGS,
+  FALLBACK_BUSINESS_HOURS,
+  FALLBACK_CALENDAR_CONFIG,
+  FALLBACK_CLOSURES,
   FALLBACK_CONDITIONS,
   FALLBACK_INSURANCE,
   FALLBACK_LOCATIONS,
@@ -18,10 +23,13 @@ import {
 
 const cfg = JSON.parse(readFileSync(new URL("../wix.config.json", import.meta.url), "utf8"));
 const SITE_ID = cfg.siteId;
-const TOKEN = execFileSync("npx", ["@wix/cli@latest", "token", "--site", SITE_ID], { encoding: "utf8" }).trim();
+// shell:true so Windows resolves `npx.cmd`; harmless on POSIX. Args are id-only (no spaces).
+const TOKEN = execFileSync("npx", ["@wix/cli@latest", "token", "--site", SITE_ID], { encoding: "utf8", shell: true }).trim();
 const BASE = "https://www.wixapis.com";
 const headers = { Authorization: `Bearer ${TOKEN}`, "wix-site-id": SITE_ID, "Content-Type": "application/json" };
 const PERMISSIONS = { insert: "ADMIN", update: "ADMIN", remove: "ADMIN", read: "ANYONE" };
+// Appointments hold PII (insurance id, DOB) — read must be ADMIN, never public.
+const ADMIN_ONLY = { insert: "ADMIN", update: "ADMIN", remove: "ADMIN", read: "ADMIN" };
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function call(method, path, body, retry = true) {
@@ -71,6 +79,32 @@ const definitions = [
   { id:"Testimonials", displayName:"Testimonials", fields:[
     {key:"patientDisplayName",displayName:"Patient Display Name",type:"TEXT"},{key:"quote",displayName:"Quote",type:"TEXT"},{key:"sourceNote",displayName:"Source Note",type:"TEXT"},{key:"consentConfirmed",displayName:"Consent Confirmed",type:"BOOLEAN"},{key:"displayOrder",displayName:"Display Order",type:"NUMBER"},{key:"published",displayName:"Published",type:"BOOLEAN"}
   ]},
+  // ── Direct-booking collections ──
+  { id:"BookableServices", displayName:"Bookable Services", fields:[
+    {key:"key",displayName:"Key",type:"TEXT"},{key:"label",displayName:"Label",type:"TEXT"},{key:"allowsFirstTime",displayName:"Allows First-time",type:"BOOLEAN"},{key:"allowsExisting",displayName:"Allows Existing",type:"BOOLEAN"},{key:"displayOrder",displayName:"Display Order",type:"NUMBER"},{key:"active",displayName:"Active",type:"BOOLEAN"}
+  ]},
+  { id:"CalendarConfig", displayName:"Calendar Config", fields:[
+    {key:"category",displayName:"Category",type:"TEXT"},{key:"label",displayName:"Label",type:"TEXT"},{key:"googleCalendarId",displayName:"Google Calendar ID",type:"TEXT"},{key:"countsAsBusy",displayName:"Counts As Busy",type:"BOOLEAN"},{key:"active",displayName:"Active",type:"BOOLEAN"},{key:"displayOrder",displayName:"Display Order",type:"NUMBER"}
+  ]},
+  { id:"BusinessHours", displayName:"Business Hours", fields:[
+    {key:"location",displayName:"Location Slug",type:"TEXT"},{key:"weekday",displayName:"Weekday (0=Sun)",type:"NUMBER"},{key:"openTime",displayName:"Open (HH:mm)",type:"TEXT"},{key:"closeTime",displayName:"Close (HH:mm)",type:"TEXT"},{key:"active",displayName:"Active",type:"BOOLEAN"}
+  ]},
+  { id:"Closures", displayName:"Closures", fields:[
+    {key:"location",displayName:"Location Slug or all",type:"TEXT"},{key:"startDate",displayName:"Start Date (YYYY-MM-DD)",type:"TEXT"},{key:"endDate",displayName:"End Date (YYYY-MM-DD)",type:"TEXT"},{key:"reason",displayName:"Reason",type:"TEXT"},{key:"active",displayName:"Active",type:"BOOLEAN"}
+  ]},
+  { id:"BookingSettings", displayName:"Booking Settings", fields:[
+    {key:"settingsKey",displayName:"Settings Key",type:"TEXT"},{key:"slotMinutes",displayName:"Slot Minutes",type:"NUMBER"},{key:"minLeadMinutes",displayName:"Min Lead Minutes",type:"NUMBER"},{key:"maxAdvanceDays",displayName:"Max Advance Days",type:"NUMBER"},{key:"cancellationPolicyText",displayName:"Cancellation Policy Text",type:"TEXT"},{key:"active",displayName:"Active",type:"BOOLEAN"}
+  ]},
+  // Regular CMS collection whose "Item added" event drives the confirmation
+  // email Automation (real fields → all usable as email dynamic values, unlike
+  // Wix Form custom fields). Written server-side (elevated) only on booking
+  // success. Holds only email-safe fields (no DOB / insurance).
+  { id:"BookingEmails", displayName:"Booking Emails", permissions:ADMIN_ONLY, fields:[
+    {key:"firstName",displayName:"First Name",type:"TEXT"},{key:"email",displayName:"Email",type:"TEXT"},{key:"service",displayName:"Service",type:"TEXT"},{key:"location",displayName:"Location",type:"TEXT"},{key:"appointmentTime",displayName:"Appointment Time",type:"TEXT"},{key:"referenceId",displayName:"Reference ID",type:"TEXT"},{key:"status",displayName:"Status",type:"TEXT"},{key:"createdAt",displayName:"Created At",type:"TEXT"}
+  ]},
+  { id:"Appointments", displayName:"Appointments", permissions:ADMIN_ONLY, fields:[
+    {key:"patientType",displayName:"Patient Type",type:"TEXT"},{key:"service",displayName:"Service",type:"TEXT"},{key:"location",displayName:"Location",type:"TEXT"},{key:"name",displayName:"Name",type:"TEXT"},{key:"email",displayName:"Email",type:"TEXT"},{key:"phone",displayName:"Phone",type:"TEXT"},{key:"insuranceCompany",displayName:"Insurance Company",type:"TEXT"},{key:"insuranceId",displayName:"Insurance ID",type:"TEXT"},{key:"dateOfBirth",displayName:"Date of Birth",type:"TEXT"},{key:"message",displayName:"Message",type:"TEXT"},{key:"startTime",displayName:"Start Time (UTC ISO)",type:"TEXT"},{key:"endTime",displayName:"End Time (UTC ISO)",type:"TEXT"},{key:"googleCalendarId",displayName:"Google Calendar ID",type:"TEXT"},{key:"googleEventId",displayName:"Google Event ID",type:"TEXT"},{key:"status",displayName:"Status",type:"TEXT"},{key:"referenceId",displayName:"Reference ID",type:"TEXT"},{key:"createdAt",displayName:"Created At (UTC ISO)",type:"TEXT"}
+  ]},
 ];
 
 async function ensureCollection(definition) {
@@ -79,7 +113,7 @@ async function ensureCollection(definition) {
   try { existing = (await call("GET", path)).collection; }
   catch (error) {
     if (!String(error).includes("returned 404")) throw error;
-    await call("POST", "/wix-data/v2/collections", { collection:{ id:definition.id,displayName:definition.displayName,fields:definition.fields,permissions:PERMISSIONS } });
+    await call("POST", "/wix-data/v2/collections", { collection:{ id:definition.id,displayName:definition.displayName,fields:definition.fields,permissions:definition.permissions ?? PERMISSIONS } });
     console.log(`[CMS] Created ${definition.id}`);
     return;
   }
@@ -144,5 +178,16 @@ await seedRows("Locations",FALLBACK_LOCATIONS,(row)=>row.slug,(row)=>{const {id,
 await seedRows("InsuranceProviders",FALLBACK_INSURANCE,(row)=>row.providerName,(row)=>{const {id,...data}=row;return data;});
 await seedRows("Pricing",FALLBACK_PRICING,(row)=>row.serviceName,(row)=>{const {id,...data}=row;return data;});
 await seedRows("Testimonials",FALLBACK_TESTIMONIALS,(row)=>row.patientDisplayName,(row)=>{const {id,...data}=row;return {...data,consentConfirmed:false};});
+
+// ── Direct-booking config seeds (Appointments is NOT seeded — it holds live PII) ──
+await seedRows("BookableServices",FALLBACK_BOOKABLE_SERVICES,(row)=>row.key,(row)=>{const {id,...data}=row;return data;});
+await seedRows("CalendarConfig",FALLBACK_CALENDAR_CONFIG,(row)=>row.category,(row)=>{const {id,...data}=row;return data;});
+await seedRows("BusinessHours",FALLBACK_BUSINESS_HOURS,(row)=>`${row.location}-${row.weekday}`,(row)=>{const {id,...data}=row;return data;});
+if (FALLBACK_CLOSURES.length) await seedRows("Closures",FALLBACK_CLOSURES,(row)=>`${row.location}-${row.startDate}`,(row)=>{const {id,...data}=row;return data;});
+
+const existingBookingSettings = await queryItems("BookingSettings");
+const bookingSettingsId = existingBookingSettings.find((r)=>r.data?.settingsKey==="primary")?.id ?? existingBookingSettings[0]?.id ?? stableId("BookingSettings","primary");
+await saveItem("BookingSettings",bookingSettingsId,{...existingBookingSettings[0]?.data,settingsKey:"primary",...FALLBACK_BOOKING_SETTINGS,active:true});
+console.log("[CMS] Updated primary BookingSettings row");
 
 console.log("[CMS] Redesign migration and verification complete.");

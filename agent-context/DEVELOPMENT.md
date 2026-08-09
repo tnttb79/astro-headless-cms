@@ -140,7 +140,9 @@ Follow the skill. In short:
 | `siteId` | `c68648ed-1577-4028-86b1-7312970b1945` |
 | `appId` (public client id) | `6b6784ba-48b1-47bb-8a5a-86ddb8545b2f` |
 | Contact `formId` | `ef70c223-ff89-4a90-a784-9de20cc87b69` |
-| CMS collections | `Treatments`, `Conditions`, `SiteSettings`, `Locations`, `InsuranceProviders`, `Pricing`, `Testimonials` |
+| Booking Confirmation `formId` | `23843eca-a00a-4128-b3cd-b6c192309f66` (direct-booking email trigger) |
+| CMS collections | `Treatments`, `Conditions`, `SiteSettings`, `Locations`, `InsuranceProviders`, `Pricing`, `Testimonials`, `BookableServices`, `CalendarConfig`, `BusinessHours`, `Closures`, `BookingSettings`, `Appointments` (ADMIN-read) |
+| Google service account | `marin-booking@marin-holy-hill.iam.gserviceaccount.com` (Calendar API; key committed at repo root — see booking note below) |
 | Wix Forms `appDefId` | `225dd912-7dea-4738-8688-4b8c6955ffc2` |
 | Live URL | `https://marin-holy-17907997-marinholyhillacu.wix-site-host.com` |
 | Dashboard | `https://manage.wix.com/dashboard/c68648ed-1577-4028-86b1-7312970b1945` |
@@ -148,6 +150,17 @@ Follow the skill. In short:
 | Form Schemas v4 base | `https://www.wixapis.com/form-schema-service/v4/forms` |
 
 > There is also an **orphaned** site from an earlier abandoned attempt (`siteId ca662f24-2101-45db-b1e6-d717ea15300e`) — the user should delete it from `manage.wix.com/account/sites`. Do not use it.
+
+### 7b. Direct booking (Book Directly flow)
+
+The `/book` page offers **Book Directly** (a React wizard) alongside the unchanged **Book through Zocdoc** link. Architecture: Astro API routes → Google Calendar (source of truth for availability) + Wix CMS (config + records). Full design/spec: `agent-context/WIP/agent_21/PLAN.md`.
+
+- **Server code** (never shipped to the browser): `src/lib/google/*` (JWT via Web Crypto → freeBusy/events REST), `src/lib/booking/*` (time, routing, availability, appointments, confirmation), `src/pages/api/booking/{availability,create}.ts`.
+- **Google auth:** service account + shared calendars (Option A). The **service-account JSON key (`marin-holy-hill-270969aef97c.json`, repo root) is GIT-IGNORED — never committed** (GitHub push protection blocks it; the calendars hold real patient PII). It is provided out-of-band, lives on the owner's machine / the deployed build, and is read only in server code (`src/lib/google/credentials.ts`) — never the client bundle or logs. Full setup + risk note: **`agent-context/BOOKING_CREDENTIALS.md`**. Env override: `GOOGLE_SA_CLIENT_EMAIL` + `GOOGLE_SA_PRIVATE_KEY_B64` via `wix env set` (preferred when present).
+- **Calendar mapping** lives in the `CalendarConfig` CMS collection (category → real Google Calendar id + `countsAsBusy`); the routing rule (patient type/service → category) is in `src/lib/booking/routing.ts`. Availability treats NEW_PATIENT/ACUPUNCTURE/CA_VA_HERB_ETC/INSURANCE/RESCHEDULE as busy; CANCELLATION/NO_SHOW are ignored.
+- **Double-booking:** create-time fresh freeBusy re-check + an atomic `Appointments` insert keyed by a deterministic per-slot `_id`.
+- **Confirmation email:** on success the server inserts a row into the **`BookingEmails`** CMS collection (`src/lib/booking/confirmation.ts`); the **site owner builds a Wix Automation** — trigger **"Item added" to BookingEmails** → action **Send email** (recipient = the `email` field; body uses `firstName`/`service`/`location`/`appointmentTime`/`referenceId`). A real CMS collection is used (not a Wix Form) because Wix Form *custom* fields can't be inserted into an Automation email. Only email-safe fields are written here; DOB/insurance/message stay in the ADMIN `Appointments` collection. (The old `BOOKING_CONFIRMATION_FORM_ID` in `config.ts` is deprecated/unused.)
+- Arizona has no DST, so `src/lib/booking/time.ts` uses a fixed `-07:00` offset. If a DST-observing location is ever added, that is the one file to change.
 
 ---
 

@@ -22,7 +22,7 @@ const items = [
     <a class="clinic-links-compact" href="/contact">Mesa &amp; Payson</a>
   </div></div>
   <div class="container header-inner">
-  <a class="brand" href="/" aria-label={`${settings.businessName}, home`}><span>Holy Hill</span><small>Acupuncture Clinic</small></a>
+  <a class="brand" href="/" aria-label={`${settings.businessName}, home`}><span>Marin Holy Hill</span><small>Acupuncture Clinic</small></a>
   <nav class="desktop-nav" aria-label="Primary navigation"><ul>{items.map((item) => <li><a href={item.href} aria-current={currentPath === item.href || (item.href !== "/" && currentPath.startsWith(`${item.href}/`)) ? "page" : undefined}>{item.label}</a></li>)}</ul></nav>
   <div class="desktop-book"><Button href={settings.bookingUrl} external variant="ghost" analyticsEvent="booking_click" analyticsSection="desktop_header_zocdoc">Book on Zocdoc</Button><Button href={DIRECT_BOOKING_PATH} analyticsEvent="booking_click" analyticsSection="desktop_header_direct">Book directly</Button></div>
   <div class="mobile-book"><Button href={DIRECT_BOOKING_PATH} analyticsEvent="booking_click" analyticsSection="compact_header_direct">Book directly</Button></div>

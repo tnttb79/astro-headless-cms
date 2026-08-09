@@ -18,6 +18,14 @@ pnpm-debug.log*
 .env.local
 .env.*.local
 
+# Google service-account key — GITIGNORED, never commit it. GitHub push
+# protection blocks it, and the booking calendars hold real patient PII
+# (name/phone/DOB/insurance in event descriptions), so a leaked key is a real
+# risk. The key is provided out-of-band and lives only on the owner's machine /
+# the deployed build. Read only in server code (src/lib/google/credentials.ts).
+# Setup + risk-acceptance note: agent-context/BOOKING_CREDENTIALS.md
+marin-holy-hill-*.json
+
 # wix cli local state
 .wix/
 

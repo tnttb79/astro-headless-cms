@@ -3,50 +3,71 @@ import SiteLayout from "../layouts/SiteLayout.astro";
 import Section from "../components/ui/Section.astro";
 import Eyebrow from "../components/ui/Eyebrow.astro";
 import Button from "../components/ui/Button.astro";
-import { getLocations } from "../lib/wix/data";
-import { getDirectBookingOption } from "../lib/booking";
+import BookingWizard from "../components/booking/BookingWizard.tsx";
+import { getBookableServices, getBookingSettings, getLocations, getSiteSettings } from "../lib/wix/data";
 
-const locations = await getLocations();
+const [settings, services, locations, bookingSettings] = await Promise.all([
+  getSiteSettings(),
+  getBookableServices(),
+  getLocations(),
+  getBookingSettings(),
+]);
+
+// Props for the wizard island (only non-sensitive display data).
+const wizardServices = services.map((s) => ({ key: s.key, label: s.label, allowsFirstTime: s.allowsFirstTime, allowsExisting: s.allowsExisting }));
+const wizardLocations = locations.map((l) => ({ slug: l.slug, name: l.name, status: l.status, city: l.city, state: l.state }));
+const telHref = `tel:${settings.phone.replace(/[^\d+]/g, "")}`;
 ---
-<SiteLayout title="Book Directly" description="Choose the Mesa or Payson clinic to book directly with Marin Holy Hill Acupuncture Clinic.">
+<SiteLayout title="Book an Appointment" description="Book directly online with Marin Holy Hill Acupuncture Clinic in Mesa, or schedule through Zocdoc.">
   <header class="page-hero container">
-    <Eyebrow>Book directly</Eyebrow>
-    <h1>Choose your clinic.</h1>
-    <p class="lede">Mesa is available now by phone. Payson direct booking will become available when the new clinic opens.</p>
+    <Eyebrow>Book</Eyebrow>
+    <h1>Book your appointment.</h1>
+    <p class="lede">Schedule directly online below, or book through Zocdoc — whichever you prefer.</p>
   </header>
-  <Section tone="surface" class="booking-location-section">
-    {locations.length ? <div class="booking-grid">
-      {locations.map((location) => {
-        const option = getDirectBookingOption(location);
-        return <article class={`booking-card ${option.available ? "" : "booking-card--unavailable"}`}>
-          <p class={`status ${option.available ? "status--available" : "status--unavailable"}`}>{option.available ? "Available now" : "Opening soon"}</p>
-          <h2>{location.name}</h2>
-          <p class="address">{location.addressLine1}{location.addressLine2 && <><br />{location.addressLine2}</>}<br />{location.city}, {location.state} {location.postalCode}</p>
-          {option.available && option.href ? <>
-            <p class="booking-note">For now, direct booking is handled by phone.</p>
-            <p class="phone"><a href={option.href} data-analytics-event="phone_click" data-analytics-section={`direct_booking_${location.slug}`}>{location.phone}</a></p>
-            <Button href={option.href} analyticsEvent="phone_click" analyticsSection={`direct_booking_${location.slug}`}>Book directly</Button>
-          </> : <>
-            <p class="booking-note">Direct booking will be available when this clinic opens.</p>
-            <span class="unavailable-action" aria-disabled="true">Book directly</span>
-          </>}
-        </article>;
-      })}
-    </div> : <p class="empty-state">Direct booking options are temporarily unavailable. Please use the Contact page.</p>}
+
+  <Section tone="surface" class="booking-direct-section">
+    <div class="booking-direct">
+      <div class="booking-direct-intro">
+        <h2>Book directly online</h2>
+        <p>Choose your service, location, and a time that works for you at our Mesa clinic. Payson booking opens when the new clinic does.</p>
+      </div>
+      <BookingWizard
+        client:only="react"
+        services={wizardServices}
+        locations={wizardLocations}
+        cancellationPolicyText={bookingSettings.cancellationPolicyText}
+        slotMinutes={bookingSettings.slotMinutes}
+        maxAdvanceDays={bookingSettings.maxAdvanceDays}
+        clinicPhone={settings.phone}
+      />
+    </div>
+  </Section>
+
+  <Section class="booking-alt-section">
+    <div class="booking-alt">
+      <div class="booking-alt-card">
+        <h2>Prefer Zocdoc?</h2>
+        <p>Book through the clinic's Zocdoc profile in a new tab.</p>
+        <Button href={settings.bookingUrl} external analyticsEvent="booking_click" analyticsSection="book_page_zocdoc">Book through Zocdoc</Button>
+      </div>
+      <div class="booking-alt-card">
+        <h2>Rather call?</h2>
+        <p>Reach the Mesa clinic directly and we'll help you schedule.</p>
+        <p class="phone"><a href={telHref} data-analytics-event="phone_click" data-analytics-section="book_page">{settings.phone}</a></p>
+      </div>
+    </div>
   </Section>
 </SiteLayout>
 <style>
-  :global(.booking-location-section){padding-top:clamp(2.25rem,5vw,4.25rem)}
-  .booking-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-md)}
-  .booking-card{display:flex;flex-direction:column;align-items:flex-start;padding:clamp(1.5rem,4vw,2.5rem);background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow)}
-  .booking-card--unavailable{background:color-mix(in srgb,var(--paper) 78%,var(--surface));border-style:dashed;box-shadow:none}
-  .status{margin:0 0 var(--space-md);padding:.35rem .65rem;border-radius:999px;font:600 var(--step--1)/1.2 var(--font-utility);letter-spacing:.04em;text-transform:uppercase}
-  .status--available{background:color-mix(in srgb,var(--pine) 12%,var(--surface));color:var(--pine-deep)}
-  .status--unavailable{background:var(--dawn-pale);color:var(--dawn-ink)}
-  .booking-card h2{font-size:var(--step-2)}
-  .address{color:var(--muted)}
-  .booking-note{margin-top:var(--space-lg);color:var(--muted);font-size:var(--step--1)}
-  .phone{margin-bottom:var(--space-md);font-size:var(--step-1)}
-  .unavailable-action{min-height:44px;display:inline-flex;align-items:center;justify-content:center;padding:.72rem 1.15rem;border:1px solid var(--line);border-radius:999px;background:color-mix(in srgb,var(--line) 58%,var(--surface));color:var(--muted);font:600 var(--step--1)/1 var(--font-body);cursor:not-allowed}
-  @media(max-width:700px){.booking-grid{grid-template-columns:1fr}}
+  :global(.booking-direct-section){padding-top:clamp(2rem,4.5vw,3.75rem)}
+  .booking-direct-intro h2{font-size:var(--step-2)}
+  .booking-direct-intro p{color:var(--muted);max-width:44rem}
+  .booking-direct-intro{margin-bottom:clamp(1.5rem,3vw,2.25rem)}
+  .booking-alt{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-md)}
+  .booking-alt-card{padding:clamp(1.25rem,3vw,1.9rem);background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg)}
+  .booking-alt-card h2{font-size:var(--step-1)}
+  .booking-alt-card p{color:var(--muted)}
+  .booking-alt-card .phone{font-size:var(--step-1);margin-top:.4rem}
+  .booking-alt-card .phone a{font-weight:600}
+  @media(max-width:700px){.booking-alt{grid-template-columns:1fr}}
 </style>

@@ -464,6 +464,10 @@ Current planned/live collections (the migration is idempotent and additive):
 - `InsuranceProviders`
 - `Pricing`
 - `Testimonials`
+- `BookableServices`, `CalendarConfig`, `BusinessHours`, `Closures`, `BookingSettings` (direct-booking config)
+- `Appointments` (direct-booking records — **ADMIN read**, holds PII; never public)
+
+The **Book Directly** flow (Google Calendar as source of truth + Wix CMS for config/records, no Wix Bookings) is implemented; see `agent-context/WIP/agent_21/PLAN.md` and `DEVELOPMENT.md` §7b. The Zocdoc booking destination in Section 5 remains unchanged.
 
 Expected additions or extensions:
 
