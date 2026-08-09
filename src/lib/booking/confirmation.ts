@@ -24,6 +24,8 @@ export interface ConfirmationInput {
   location: string; // human label
   appointmentTime: string; // Phoenix-readable label
   referenceId: string;
+  clinicAddress: string; // one-line address of the booked clinic
+  clinicPhone: string; // phone of the booked clinic
 }
 
 export async function sendBookingConfirmation(input: ConfirmationInput): Promise<void> {
@@ -35,6 +37,8 @@ export async function sendBookingConfirmation(input: ConfirmationInput): Promise
       location: input.location,
       appointmentTime: input.appointmentTime,
       referenceId: input.referenceId,
+      clinicAddress: input.clinicAddress,
+      clinicPhone: input.clinicPhone,
       status: "sent",
       createdAt: new Date().toISOString(),
     });

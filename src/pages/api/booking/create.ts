@@ -173,6 +173,10 @@ export const POST: APIRoute = async ({ request }) => {
     location: loc.name,
     appointmentTime: formatPhoenixLabel(slotStart),
     referenceId,
+    clinicPhone: loc.phone,
+    clinicAddress: [loc.addressLine1, loc.addressLine2, `${loc.city}, ${loc.state} ${loc.postalCode}`]
+      .filter(Boolean)
+      .join(", "),
   });
 
   return json({
