@@ -13,7 +13,7 @@ const hero = SITE_IMAGES.homeHero;
     <Eyebrow>Third-generation care · Mesa & Payson</Eyebrow>
     <h1>Experienced care. Sincere attention.</h1>
     <p>Personalized acupuncture and integrative support from Dr. Hyo-won Kang, shaped by a third-generation tradition and 28 years of clinical experience.</p>
-    <BookingActions bookingUrl={bookingUrl} section="home_hero" directVariant="ghost" class="hero-booking-actions" />
+    <BookingActions bookingUrl={bookingUrl} section="home_hero" class="hero-booking-actions" />
   </div>
 </section>
 <RidgelineDivider variant="hero" />
@@ -27,7 +27,6 @@ const hero = SITE_IMAGES.homeHero;
   h1 { max-width: 13ch; color: white; }
   p { max-width: 47ch; font-size: var(--step-1); }
   :global(.hero-booking-actions) { margin-top: 1.6rem; }
-  .hero :global(.hero-booking-actions .button--ghost) { color: white; }
   @keyframes reveal-image { from { opacity: .6; transform: scale(1.035); } to { opacity: 1; transform: scale(1); } }
   @keyframes reveal-copy { from { opacity: 0; transform: translateY(1rem); } to { opacity: 1; transform: none; } }
   @media (max-width: 760px) { .hero { min-height: 44rem; align-items: end; } .hero__media { top: 0; width: 100%; transform: none; } .shade { background: linear-gradient(0deg,var(--pine-deep) 0%,transparent 68%); } .hero__content { padding-block: 18rem 3.5rem; } }

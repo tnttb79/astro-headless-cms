@@ -19,6 +19,7 @@ import {
   FALLBACK_SETTINGS,
   FALLBACK_TESTIMONIALS,
   FALLBACK_TREATMENTS,
+  INITIAL_ZOCDOC_BOOKING_URL,
 } from "../src/content/fallback-data.ts";
 
 const cfg = JSON.parse(readFileSync(new URL("../wix.config.json", import.meta.url), "utf8"));
@@ -65,7 +66,7 @@ const definitions = [
     {key:"title",displayName:"Title",type:"TEXT"},{key:"slug",displayName:"Slug",type:"TEXT"},{key:"category",displayName:"Category",type:"TEXT"},{key:"summary",displayName:"Summary",type:"TEXT"},{key:"description",displayName:"Description",type:"RICH_TEXT"},{key:"featured",displayName:"Featured",type:"BOOLEAN"},...commonPublishFields
   ]},
   { id:"SiteSettings", displayName:"Site Settings", fields:[
-    {key:"settingsKey",displayName:"Settings Key",type:"TEXT"},{key:"businessName",displayName:"Business Name",type:"TEXT"},{key:"doctorName",displayName:"Doctor Name",type:"TEXT"},{key:"yearsExperience",displayName:"Years Experience",type:"NUMBER"},{key:"phone",displayName:"Phone",type:"TEXT"},{key:"email",displayName:"Email",type:"TEXT"},{key:"bookingUrl",displayName:"Booking URL",type:"TEXT"},{key:"medicalDisclaimer",displayName:"Medical Disclaimer",type:"TEXT"},{key:"instagramUrl",displayName:"Instagram URL",type:"URL"},{key:"facebookUrl",displayName:"Facebook URL",type:"URL"},{key:"youtubeUrl",displayName:"YouTube URL",type:"URL"},{key:"address",displayName:"Legacy Address",type:"TEXT"},{key:"weekdayHours",displayName:"Legacy Weekday Hours",type:"TEXT"},{key:"saturdayHours",displayName:"Legacy Saturday Hours",type:"TEXT"},{key:"sundayHours",displayName:"Legacy Sunday Hours",type:"TEXT"}
+    {key:"settingsKey",displayName:"Settings Key",type:"TEXT"},{key:"businessName",displayName:"Business Name",type:"TEXT"},{key:"doctorName",displayName:"Doctor Name",type:"TEXT"},{key:"yearsExperience",displayName:"Years Experience",type:"NUMBER"},{key:"phone",displayName:"Phone",type:"TEXT"},{key:"email",displayName:"Email",type:"TEXT"},{key:"bookingUrl",displayName:"Zocdoc Booking URL (optional)",type:"TEXT"},{key:"medicalDisclaimer",displayName:"Medical Disclaimer",type:"TEXT"},{key:"instagramUrl",displayName:"Instagram URL",type:"URL"},{key:"facebookUrl",displayName:"Facebook URL",type:"URL"},{key:"youtubeUrl",displayName:"YouTube URL",type:"URL"},{key:"address",displayName:"Legacy Address",type:"TEXT"},{key:"weekdayHours",displayName:"Legacy Weekday Hours",type:"TEXT"},{key:"saturdayHours",displayName:"Legacy Saturday Hours",type:"TEXT"},{key:"sundayHours",displayName:"Legacy Sunday Hours",type:"TEXT"}
   ]},
   { id:"Locations", displayName:"Locations", fields:[
     {key:"name",displayName:"Name",type:"TEXT"},{key:"slug",displayName:"Slug",type:"TEXT"},{key:"addressLine1",displayName:"Address Line 1",type:"TEXT"},{key:"addressLine2",displayName:"Address Line 2",type:"TEXT"},{key:"city",displayName:"City",type:"TEXT"},{key:"state",displayName:"State",type:"TEXT"},{key:"postalCode",displayName:"Postal Code",type:"TEXT"},{key:"phone",displayName:"Phone",type:"TEXT"},{key:"email",displayName:"Email",type:"TEXT"},{key:"weekdayHours",displayName:"Weekday Hours",type:"TEXT"},{key:"saturdayHours",displayName:"Saturday Hours",type:"TEXT"},{key:"sundayHours",displayName:"Sunday Hours",type:"TEXT"},{key:"mapUrl",displayName:"Map URL",type:"URL"},{key:"directionsUrl",displayName:"Directions URL",type:"URL"},{key:"status",displayName:"Status",type:"TEXT"},{key:"displayOrder",displayName:"Display Order",type:"NUMBER"},{key:"active",displayName:"Active",type:"BOOLEAN"}
@@ -170,8 +171,10 @@ await seedRows("Treatments",FALLBACK_TREATMENTS,(row)=>row.slug,(row)=>{ const {
 await seedRows("Conditions",FALLBACK_CONDITIONS,(row)=>row.slug,(row)=>{ const {id,...data}=row; return data; });
 
 const existingSettings = await queryItems("SiteSettings");
-const settingsId = existingSettings[0]?.id ?? stableId("SiteSettings","primary");
-await saveItem("SiteSettings",settingsId,{...existingSettings[0]?.data,settingsKey:"primary",...FALLBACK_SETTINGS});
+const existingSettingsRow = existingSettings.find((row)=>row.data?.settingsKey==="primary") ?? existingSettings[0];
+const settingsId = existingSettingsRow?.id ?? stableId("SiteSettings","primary");
+const initialSettings = {...FALLBACK_SETTINGS,bookingUrl:INITIAL_ZOCDOC_BOOKING_URL};
+await saveItem("SiteSettings",settingsId,{...initialSettings,...existingSettingsRow?.data,settingsKey:"primary"});
 console.log("[CMS] Updated primary SiteSettings row");
 
 await seedRows("Locations",FALLBACK_LOCATIONS,(row)=>row.slug,(row)=>{const {id,...data}=row;return data;});

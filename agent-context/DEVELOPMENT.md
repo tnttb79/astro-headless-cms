@@ -153,7 +153,7 @@ Follow the skill. In short:
 
 ### 7b. Direct booking (Book Directly flow)
 
-The `/book` page offers **Book Directly** (a React wizard) alongside the unchanged **Book through Zocdoc** link. Architecture: Astro API routes → Google Calendar (source of truth for availability) + Wix CMS (config + records). Full design/spec: `agent-context/WIP/agent_21/PLAN.md`.
+The `/book` page makes **Book Directly** (a React wizard) the primary path. Zocdoc is a subdued, optional alternative controlled by `SiteSettings.bookingUrl`; clear that CMS field to remove every Zocdoc link. Architecture: Astro API routes → Google Calendar (source of truth for availability) + Wix CMS (config + records). Full design/spec: `agent-context/WIP/agent_21/PLAN.md`.
 
 - **Server code** (never shipped to the browser): `src/lib/google/*` (JWT via Web Crypto → freeBusy/events REST), `src/lib/booking/*` (time, routing, availability, appointments, confirmation), `src/pages/api/booking/{availability,create}.ts`.
 - **Google auth:** service account + shared calendars (Option A). The **service-account JSON key (`marin-holy-hill-270969aef97c.json`, repo root) is GIT-IGNORED — never committed** (GitHub push protection blocks it; the calendars hold real patient PII). It is provided out-of-band, lives on the owner's machine / the deployed build, and is read only in server code (`src/lib/google/credentials.ts`) — never the client bundle or logs. Full setup + risk note: **`agent-context/BOOKING_CREDENTIALS.md`**. Env override: `GOOGLE_SA_CLIENT_EMAIL` + `GOOGLE_SA_PRIVATE_KEY_B64` via `wix env set` (preferred when present).

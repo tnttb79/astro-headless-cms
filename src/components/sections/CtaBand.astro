@@ -3,13 +3,12 @@ import BookingActions from "../ui/BookingActions.astro";
 interface Props { bookingUrl: string; heading?: string; section?: string; }
 const { bookingUrl, heading = "Ready to take the next step?", section = "cta_band" } = Astro.props;
 ---
-<section class="cta-band"><div class="container inner"><div><h2>{heading}</h2><p>Choose Zocdoc or book directly with the clinic.</p></div><BookingActions bookingUrl={bookingUrl} section={section} directVariant="ghost" class="cta-booking-actions" /></div></section>
+<section class="cta-band"><div class="container inner"><div><h2>{heading}</h2><p>Schedule online with the clinic at a time that works for you.</p></div><BookingActions bookingUrl={bookingUrl} section={section} class="cta-booking-actions" /></div></section>
 <style>
   .cta-band { padding-block: var(--space-xl); background: var(--pine-deep); color: white; }
   .inner { display: flex; align-items: center; justify-content: space-between; gap: var(--space-lg); }
   h2 { color: white; }
   p { max-width: 55ch; color: color-mix(in srgb, var(--surface) 80%, var(--pine)); }
   :global(.cta-booking-actions) { flex-shrink: 0; }
-  .cta-band :global(.cta-booking-actions .button--ghost) { color: white; }
   @media (max-width: 760px) { .inner { display: block; } :global(.cta-booking-actions) { margin-top: 1.5rem; } }
 </style>

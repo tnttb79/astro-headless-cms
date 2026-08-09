@@ -129,9 +129,9 @@ Dr. Kang requested a simpler primary structure:
 
 Treat **Book** as a prominent CTA, not necessarily a separate content-heavy page. Do not build a full Wix Bookings system unless requested.
 
-## Confirmed booking destination
+## Booking destinations
 
-**Confirmed August 2, 2026.** Book routes to the clinic's Zocdoc profile:
+**Updated August 9, 2026.** The clinic's direct `/book` flow is the primary booking destination. The Zocdoc profile remains an optional, visually secondary route while the clinic's contract is active:
 
 ```
 https://www.zocdoc.com/practice/marin-holy-hill-acupuncture-clinic-175973?lock=true&isNewPatient=false&referrerType=widget
@@ -139,10 +139,11 @@ https://www.zocdoc.com/practice/marin-holy-hill-acupuncture-clinic-175973?lock=t
 
 Implementation requirements:
 
-- Store this URL in `SiteSettings.bookingUrl` so it can be changed in the Wix dashboard without a code release. Never hard-code it in a component. The `getSiteSettings()` fallback in `src/lib/wix/data.ts` should also use it instead of `/contact`.
-- Every Book CTA links to it and opens in a new tab with `rel="noopener noreferrer"`, since it leaves the site for a third-party scheduler.
+- Store the optional URL in `SiteSettings.bookingUrl`; never hard-code it in a component. Clearing that CMS field must hide every Zocdoc option without a code release.
+- Primary Book CTAs route to `/book`. Where Zocdoc is shown, present it as a subdued alternative and open it in a new tab with `rel="noopener noreferrer"`.
+- Runtime fallbacks must leave `bookingUrl` empty, and repeat CMS migrations must preserve the owner's existing field value so an expired link is not restored.
 - Fire a no-PII booking-click analytics event, recording only which section the click came from.
-- Keep `/contact` and click-to-call as visible secondary paths for visitors who would rather not use an online scheduler.
+- Keep `/contact` and click-to-call visible for visitors who would rather not use online scheduling.
 
 `TODO: CONFIRM THE QUERY STRING.` `isNewPatient=false` preselects a returning patient, and `referrerType=widget` indicates the link was copied from an embed snippet. Most website Book traffic is new patients, so confirm whether the site should use `isNewPatient=true`, omit the parameter so Zocdoc asks, or offer separate new-patient and returning-patient CTAs.
 
@@ -445,7 +446,7 @@ The Contact page must include:
 - Address, click-to-call phone, map, directions link, and available hours for each location.
 - The Wix-backed contact form.
 - A privacy warning: “Please do not include private medical details or sensitive health information in this form.”
-- Clear booking/contact choices: Book opens the Zocdoc scheduler from Section 5 in a new tab, alongside click-to-call and the form as alternatives.
+- Clear booking/contact choices: direct online booking is primary, alongside click-to-call and the form; Zocdoc appears only as an optional secondary route while configured in CMS.
 
 Do not show social icons until real profile URLs are supplied.
 
@@ -467,7 +468,7 @@ Current planned/live collections (the migration is idempotent and additive):
 - `BookableServices`, `CalendarConfig`, `BusinessHours`, `Closures`, `BookingSettings` (direct-booking config)
 - `Appointments` (direct-booking records — **ADMIN read**, holds PII; never public)
 
-The **Book Directly** flow (Google Calendar as source of truth + Wix CMS for config/records, no Wix Bookings) is implemented; see `agent-context/WIP/agent_21/PLAN.md` and `DEVELOPMENT.md` §7b. The Zocdoc booking destination in Section 5 remains unchanged.
+The **Book Directly** flow (Google Calendar as source of truth + Wix CMS for config/records, no Wix Bookings) is implemented; see `agent-context/WIP/agent_21/PLAN.md` and `DEVELOPMENT.md` §7b. Zocdoc is now an optional secondary path controlled by `SiteSettings.bookingUrl`.
 
 Expected additions or extensions:
 
@@ -496,7 +497,7 @@ Recommended `Locations` fields:
 - `displayOrder`
 - `active`
 
-Keep the booking destination, business name, practitioner display name, public email, disclaimer, and social links centralized in CMS/configuration. The booking destination is the confirmed Zocdoc URL in Section 5; seed it into `SiteSettings.bookingUrl` rather than repeating it in components.
+Keep the optional Zocdoc destination, business name, practitioner display name, public email, disclaimer, and social links centralized in CMS/configuration. Initial setup may seed the Zocdoc URL into `SiteSettings.bookingUrl`, but subsequent seeds must preserve the owner's value, including an intentionally empty field.
 
 Do not hard-code curated treatment or condition IDs in page components. Use `featured`, `published`, category, and display-order fields.
 

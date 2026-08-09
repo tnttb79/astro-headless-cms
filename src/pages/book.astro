@@ -2,7 +2,6 @@
 import SiteLayout from "../layouts/SiteLayout.astro";
 import Section from "../components/ui/Section.astro";
 import Eyebrow from "../components/ui/Eyebrow.astro";
-import Button from "../components/ui/Button.astro";
 import BookingWizard from "../components/booking/BookingWizard.tsx";
 import { getBookableServices, getBookingSettings, getLocations, getSiteSettings } from "../lib/wix/data";
 
@@ -17,12 +16,15 @@ const [settings, services, locations, bookingSettings] = await Promise.all([
 const wizardServices = services.map((s) => ({ key: s.key, label: s.label, allowsFirstTime: s.allowsFirstTime, allowsExisting: s.allowsExisting }));
 const wizardLocations = locations.map((l) => ({ slug: l.slug, name: l.name, status: l.status, city: l.city, state: l.state }));
 const telHref = `tel:${settings.phone.replace(/[^\d+]/g, "")}`;
+const pageDescription = settings.bookingUrl
+  ? "Book directly online with Marin Holy Hill Acupuncture Clinic in Mesa. Zocdoc remains available for patients who prefer it."
+  : "Book directly online with Marin Holy Hill Acupuncture Clinic in Mesa.";
 ---
-<SiteLayout title="Book an Appointment" description="Book directly online with Marin Holy Hill Acupuncture Clinic in Mesa, or schedule through Zocdoc.">
+<SiteLayout title="Book an Appointment" description={pageDescription}>
   <header class="page-hero container">
     <Eyebrow>Book</Eyebrow>
     <h1>Book your appointment.</h1>
-    <p class="lede">Schedule directly online below, or book through Zocdoc — whichever you prefer.</p>
+    <p class="lede">Choose your appointment time and book directly with the clinic.</p>
   </header>
 
   <Section tone="surface" class="booking-direct-section">
@@ -30,6 +32,7 @@ const telHref = `tel:${settings.phone.replace(/[^\d+]/g, "")}`;
       <div class="booking-direct-intro">
         <h2>Book directly online</h2>
         <p>Choose your service, location, and a time that works for you at our Mesa clinic. Payson booking opens when the new clinic does.</p>
+        {settings.bookingUrl && <p class="zocdoc-intro">Already a Zocdoc patient? <a href={settings.bookingUrl} target="_blank" rel="noopener noreferrer" data-analytics-event="booking_click" data-analytics-section="book_page_zocdoc">Continue on Zocdoc →</a></p>}
       </div>
       <BookingWizard
         client:only="react"
@@ -45,15 +48,13 @@ const telHref = `tel:${settings.phone.replace(/[^\d+]/g, "")}`;
 
   <Section class="booking-alt-section">
     <div class="booking-alt">
-      <div class="booking-alt-card">
-        <h2>Prefer Zocdoc?</h2>
-        <p>Book through the clinic's Zocdoc profile in a new tab.</p>
-        <Button href={settings.bookingUrl} external analyticsEvent="booking_click" analyticsSection="book_page_zocdoc">Book through Zocdoc</Button>
+      <div>
+        <Eyebrow>Other options</Eyebrow>
+        <h2>Need help scheduling?</h2>
+        <p>Call the Mesa clinic and we’ll help you find the right appointment.</p>
       </div>
-      <div class="booking-alt-card">
-        <h2>Rather call?</h2>
-        <p>Reach the Mesa clinic directly and we'll help you schedule.</p>
-        <p class="phone"><a href={telHref} data-analytics-event="phone_click" data-analytics-section="book_page">{settings.phone}</a></p>
+      <div class="booking-alt-links">
+        <a class="phone" href={telHref} data-analytics-event="phone_click" data-analytics-section="book_page">Call {settings.phone}</a>
       </div>
     </div>
   </Section>
@@ -63,11 +64,13 @@ const telHref = `tel:${settings.phone.replace(/[^\d+]/g, "")}`;
   .booking-direct-intro h2{font-size:var(--step-2)}
   .booking-direct-intro p{color:var(--muted);max-width:44rem}
   .booking-direct-intro{margin-bottom:clamp(1.5rem,3vw,2.25rem)}
-  .booking-alt{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-md)}
-  .booking-alt-card{padding:clamp(1.25rem,3vw,1.9rem);background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg)}
-  .booking-alt-card h2{font-size:var(--step-1)}
-  .booking-alt-card p{color:var(--muted)}
-  .booking-alt-card .phone{font-size:var(--step-1);margin-top:.4rem}
-  .booking-alt-card .phone a{font-weight:600}
-  @media(max-width:700px){.booking-alt{grid-template-columns:1fr}}
+  .booking-direct-intro .zocdoc-intro{margin-top:.9rem;font-size:var(--step--1);color:var(--muted)}
+  .booking-direct-intro .zocdoc-intro a{color:var(--pine);font-weight:600;text-underline-offset:.18em}
+  .booking-alt{display:flex;align-items:center;justify-content:space-between;gap:var(--space-lg);padding:clamp(1.25rem,3vw,1.9rem);background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg)}
+  .booking-alt h2{font-size:var(--step-1)}
+  .booking-alt p{max-width:42rem;margin-bottom:0;color:var(--muted)}
+  .booking-alt-links{display:flex;flex-direction:column;align-items:flex-end;gap:.65rem;flex-shrink:0}
+  .booking-alt-links a{text-underline-offset:.18em}
+  .booking-alt-links .phone{font-weight:600}
+  @media(max-width:700px){.booking-alt{display:block}.booking-alt-links{align-items:flex-start;margin-top:1.25rem}}
 </style>

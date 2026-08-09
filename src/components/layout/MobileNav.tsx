@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 interface NavItem { href: string; label: string; }
-interface Props { items: NavItem[]; bookingUrl: string; currentPath: string; }
+interface Props { items: NavItem[]; currentPath: string; }
 
-export default function MobileNav({ items, bookingUrl, currentPath }: Props) {
+export default function MobileNav({ items, currentPath }: Props) {
   const [open, setOpen] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
   const panel = useRef<HTMLDivElement>(null);
@@ -34,8 +34,7 @@ export default function MobileNav({ items, bookingUrl, currentPath }: Props) {
           {items.map((item) => <li key={item.href}><a href={item.href} aria-current={currentPath === item.href || (item.href !== "/" && currentPath.startsWith(`${item.href}/`)) ? "page" : undefined}>{item.label}</a></li>)}
         </ul></nav>
         <div className="mobile-nav__booking-actions">
-          <a className="mobile-nav__book mobile-nav__book--zocdoc" href={bookingUrl} target="_blank" rel="noopener noreferrer" data-analytics-event="booking_click" data-analytics-section="mobile_header_zocdoc">Book on Zocdoc</a>
-          <a className="mobile-nav__book mobile-nav__book--direct" href="/book" data-analytics-event="booking_click" data-analytics-section="mobile_header_direct">Book directly</a>
+          <a className="mobile-nav__book mobile-nav__book--direct" href="/book" data-analytics-event="booking_click" data-analytics-section="mobile_header_direct">Book with the clinic</a>
         </div>
       </div>
     </div>,
@@ -59,8 +58,7 @@ export default function MobileNav({ items, bookingUrl, currentPath }: Props) {
       .mobile-nav nav a[aria-current="page"] { color:var(--dawn-ink); }
       .mobile-nav__booking-actions { display:grid; gap:.7rem; }
       .mobile-nav__book { min-height:46px; display:flex; align-items:center; justify-content:center; border:1px solid transparent; border-radius:999px; color:var(--pine-deep); text-decoration:none; font-weight:600; }
-      .mobile-nav__book--zocdoc { background:var(--dawn); }
-      .mobile-nav__book--direct { border-color:var(--pine); background:var(--surface); }
+      .mobile-nav__book--direct { background:var(--dawn); }
       @media(max-width:1160px){ .mobile-nav{display:block;} }
     `}</style>
   </div>;
