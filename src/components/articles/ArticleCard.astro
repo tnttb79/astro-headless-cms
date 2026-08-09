@@ -1,0 +1,39 @@
+---
+import type { HealthArticle } from "../../types/article";
+
+interface Props { article: HealthArticle; }
+const { article } = Astro.props;
+const formattedDate = article.publishedDate
+  ? new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" }).format(new Date(article.publishedDate))
+  : "";
+const href = `/articles/${encodeURIComponent(article.slug)}`;
+---
+<article class="article-card">
+  <a class="article-card__media" href={href} aria-label={`Read ${article.title}`}>
+    {article.coverImageUrl
+      ? <img src={article.coverImageUrl} width="800" height="500" alt={article.coverImageAlt} loading="lazy" decoding="async" />
+      : <span class="article-card__placeholder" aria-hidden="true"><span>Health Articles</span></span>}
+  </a>
+  <div class="article-card__body">
+    {formattedDate && <time datetime={article.publishedDate}>{formattedDate}</time>}
+    <h3><a href={href}>{article.title}</a></h3>
+    {article.excerpt && <p>{article.excerpt}</p>}
+    <a class="article-card__link" href={href} aria-label={`Read more about ${article.title}`}>Read More <span aria-hidden="true">→</span></a>
+  </div>
+</article>
+<style>
+  .article-card { min-width: 0; height: 100%; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: 0 1px 0 rgb(27 33 31 / .03); }
+  .article-card__media { display: block; aspect-ratio: 8 / 5; overflow: hidden; background: var(--dawn-pale); }
+  .article-card__media img { width: 100%; height: 100%; object-fit: cover; transition: transform .25s ease; }
+  .article-card__media:hover img { transform: scale(1.02); }
+  .article-card__placeholder { width: 100%; height: 100%; display: grid; place-items: end start; padding: 1.2rem; color: var(--pine-deep); background: linear-gradient(145deg, color-mix(in srgb, var(--dawn-pale) 82%, white), color-mix(in srgb, var(--ridge) 30%, var(--paper))); }
+  .article-card__placeholder span { font: 500 .7rem/1 var(--font-utility); letter-spacing: .1em; text-transform: uppercase; }
+  .article-card__body { flex: 1; display: flex; flex-direction: column; align-items: flex-start; padding: clamp(1.15rem, 2.5vw, 1.65rem); }
+  time { margin-bottom: .6rem; color: var(--muted); font: 500 var(--step--1)/1.4 var(--font-utility); }
+  h3 { margin-bottom: .65rem; font-size: var(--step-2); }
+  h3 a { color: inherit; text-decoration: none; }
+  h3 a:hover { color: var(--dawn-ink); }
+  p { display: -webkit-box; overflow: hidden; margin-bottom: 1.25rem; color: var(--muted); -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+  .article-card__link { margin-top: auto; font-weight: 600; text-decoration-thickness: 1px; }
+  @media (prefers-reduced-motion: reduce) { .article-card__media img { transition: none; } }
+</style>

@@ -1,0 +1,92 @@
+---
+import { WIX_APPS } from "@wix/essentials";
+import { SEO } from "@wix/seo/components";
+import { loadSEOTagsServiceConfig } from "@wix/seo/services";
+import { seoTags } from "@wix/seo";
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import Breadcrumbs from "../../components/layout/Breadcrumbs.astro";
+import Eyebrow from "../../components/ui/Eyebrow.astro";
+import Section from "../../components/ui/Section.astro";
+import Button from "../../components/ui/Button.astro";
+import ArticleContent from "../../components/articles/ArticleContent";
+import { getHealthArticleBySlug } from "../../lib/wix/blog";
+import { DIRECT_BOOKING_PATH } from "../../lib/booking";
+
+export const wixMetadata = {
+  appDefId: WIX_APPS.blogs.id,
+  pageIdentifier: WIX_APPS.blogs.postPageMetadata.pageIdentifier,
+  identifiers: { slug: WIX_APPS.blogs.postPageMetadata.identifiers.slug },
+};
+
+const slug = Astro.params.slug ?? "";
+
+async function getArticleSeo() {
+  if (!slug) return null;
+  try {
+    return await loadSEOTagsServiceConfig({
+      pageUrl: Astro.url.href,
+      itemType: seoTags.ItemType.BLOG_POST,
+      itemData: { slug },
+    });
+  } catch (error) {
+    console.error("[wix-blog] article SEO resolution failed", error);
+    return null;
+  }
+}
+
+const [article, seoTagsServiceConfig] = await Promise.all([getHealthArticleBySlug(slug), getArticleSeo()]);
+if (!article) return new Response(null, { status: 404, statusText: "Article not found" });
+
+const formattedDate = article.publishedDate
+  ? new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" }).format(new Date(article.publishedDate))
+  : "";
+---
+<SiteLayout title={article.title} description={article.excerpt || "A health article from Dr. Kang."} image={article.coverImageUrl || undefined} wixSeo={Boolean(seoTagsServiceConfig)}>
+  {seoTagsServiceConfig && <SEO.Tags seoTagsServiceConfig={seoTagsServiceConfig} slot="seo-tags" />}
+  <article>
+    <header class="article-hero">
+      <div class="narrow">
+        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Health Articles", href: "/articles" }, { label: article.title }]} />
+        <Eyebrow>Health Articles</Eyebrow>
+        <h1>{article.title}</h1>
+        {formattedDate && <time datetime={article.publishedDate}>{formattedDate}</time>}
+      </div>
+    </header>
+    <div class="article-cover narrow">
+      {article.coverImageUrl
+        ? <img src={article.coverImageUrl} width="1400" height="788" alt={article.coverImageAlt} loading="eager" decoding="async" />
+        : <div class="article-cover__placeholder" aria-hidden="true"><span>Health Articles</span></div>}
+    </div>
+    <Section narrow class="article-content">
+      {article.richContent
+        ? <ArticleContent client:only="react" content={article.richContent} />
+        : <p class="empty-state">This article is temporarily unavailable. Please check back soon.</p>}
+    </Section>
+  </article>
+  <Section tone="pine" class="article-cta">
+    <div class="article-cta__inner">
+      <div><Eyebrow>Personalized care</Eyebrow><h2>Ready to talk with Dr. Kang?</h2><p>Schedule an appointment to discuss your health goals and whether acupuncture may be appropriate for you.</p></div>
+      <Button href={DIRECT_BOOKING_PATH} analyticsEvent="booking_click" analyticsSection="article_footer">Book Appointment</Button>
+    </div>
+  </Section>
+</SiteLayout>
+<style>
+  .article-hero { padding: clamp(2.5rem, 7vw, 5.5rem) 0 clamp(1.75rem, 4vw, 3rem); background: linear-gradient(145deg, var(--paper), color-mix(in srgb, var(--dawn-pale) 62%, var(--paper))); }
+  .article-hero h1 { max-width: 18ch; }
+  time { color: var(--muted); font: 500 var(--step--1)/1.4 var(--font-utility); }
+  .article-cover { margin-top: clamp(1.5rem, 4vw, 3rem); }
+  .article-cover img, .article-cover__placeholder { width: 100%; aspect-ratio: 16 / 9; border-radius: var(--radius-lg); }
+  .article-cover img { object-fit: cover; }
+  .article-cover__placeholder { display: grid; place-items: end start; padding: clamp(1.25rem, 4vw, 2.25rem); color: var(--pine-deep); background: linear-gradient(145deg, color-mix(in srgb, var(--dawn-pale) 82%, white), color-mix(in srgb, var(--ridge) 30%, var(--paper))); }
+  .article-cover__placeholder span { font: 500 var(--step--1)/1 var(--font-utility); letter-spacing: .1em; text-transform: uppercase; }
+  .article-cta__inner { display: flex; align-items: center; justify-content: space-between; gap: var(--space-lg); }
+  .article-cta__inner p { max-width: 58ch; color: color-mix(in srgb, var(--surface) 82%, var(--pine)); }
+  .article-cta__inner :global(.button) { flex: 0 0 auto; }
+  @media (max-width: 700px) { .article-cta__inner { display: block; } .article-cta__inner :global(.button) { margin-top: 1rem; } }
+</style>
+<style is:global>
+  .article-content .ricos-content { max-width: var(--measure); color: var(--ink); font-family: var(--font-body); }
+  .article-content .ricos-content p,
+  .article-content .ricos-content li { color: var(--ink); font-family: var(--font-body); line-height: 1.75; }
+  .article-content .ricos-content img { max-width: 100%; height: auto; border-radius: var(--radius-md); }
+</style>

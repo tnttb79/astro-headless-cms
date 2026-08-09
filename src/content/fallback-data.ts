@@ -8,6 +8,9 @@ export const FALLBACK_SETTINGS: SiteSettings = {
   email: "marinholyhillacu@gmail.com",
   bookingUrl: "https://www.zocdoc.com/practice/marin-holy-hill-acupuncture-clinic-175973?lock=true&isNewPatient=false&referrerType=widget",
   medicalDisclaimer: "The information on this website is for general education only and is not a substitute for professional medical advice, diagnosis, or treatment. Results and appropriate treatment vary by person.",
+  instagramUrl: "https://www.instagram.com/tcmkang67/",
+  facebookUrl: "https://www.facebook.com/marinholyhillacu/",
+  youtubeUrl: "https://www.youtube.com/channel/UCHUYhknnVi1FEgMXLn21q_w",
 };
 
 const service = (slug: string, title: string, group: "core" | "specialized", order: number, shortDescription: string, description: string, howItWorks: string, indications: string, price = "", duration = "", featured = false): Treatment => ({

@@ -6,6 +6,9 @@ export interface SiteSettings {
   email: string;
   bookingUrl: string;
   medicalDisclaimer: string;
+  instagramUrl: string;
+  facebookUrl: string;
+  youtubeUrl: string;
 }
 
 export interface Treatment {

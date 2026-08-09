@@ -27,7 +27,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     const { items: rows } = await items.query(COLLECTIONS.siteSettings).limit(20).find();
     const row:any = rows.find((candidate:any) => candidate.settingsKey === "primary") ?? rows[0];
     if (!row) return FALLBACK_SETTINGS;
-    return { businessName:text(row.businessName) || FALLBACK_SETTINGS.businessName, doctorName:text(row.doctorName) || FALLBACK_SETTINGS.doctorName, yearsExperience:number(row.yearsExperience,FALLBACK_SETTINGS.yearsExperience), phone:text(row.phone) || FALLBACK_SETTINGS.phone, email:text(row.email) || FALLBACK_SETTINGS.email, bookingUrl:text(row.bookingUrl) || FALLBACK_SETTINGS.bookingUrl, medicalDisclaimer:text(row.medicalDisclaimer) || FALLBACK_SETTINGS.medicalDisclaimer };
+    return { businessName:text(row.businessName) || FALLBACK_SETTINGS.businessName, doctorName:text(row.doctorName) || FALLBACK_SETTINGS.doctorName, yearsExperience:number(row.yearsExperience,FALLBACK_SETTINGS.yearsExperience), phone:text(row.phone) || FALLBACK_SETTINGS.phone, email:text(row.email) || FALLBACK_SETTINGS.email, bookingUrl:text(row.bookingUrl) || FALLBACK_SETTINGS.bookingUrl, medicalDisclaimer:text(row.medicalDisclaimer) || FALLBACK_SETTINGS.medicalDisclaimer, instagramUrl:text(row.instagramUrl) || FALLBACK_SETTINGS.instagramUrl, facebookUrl:text(row.facebookUrl) || FALLBACK_SETTINGS.facebookUrl, youtubeUrl:text(row.youtubeUrl) || FALLBACK_SETTINGS.youtubeUrl };
   } catch (error) { console.error("[wix] getSiteSettings failed", error); return FALLBACK_SETTINGS; }
 }
 

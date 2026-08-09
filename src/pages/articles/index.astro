@@ -1,0 +1,26 @@
+---
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import Section from "../../components/ui/Section.astro";
+import Eyebrow from "../../components/ui/Eyebrow.astro";
+import ArticleCard from "../../components/articles/ArticleCard.astro";
+import { getHealthArticles } from "../../lib/wix/blog";
+
+const articles = await getHealthArticles();
+---
+<SiteLayout title="Health Articles" description="Read Dr. Kang's latest health articles about acupuncture, traditional medicine, and whole-person care.">
+  <header class="page-hero container">
+    <Eyebrow>Health Articles</Eyebrow>
+    <h1>Thoughtful guidance for your health journey.</h1>
+    <p class="lede">Articles from Dr. Kang on acupuncture, traditional medicine, and practical ways to support your well-being.</p>
+  </header>
+  <Section tone="surface">
+    {articles.length > 0
+      ? <div class="article-grid">{articles.map((article) => <ArticleCard article={article} />)}</div>
+      : <p class="empty-state">Health articles coming soon</p>}
+  </Section>
+</SiteLayout>
+<style>
+  .article-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-md); }
+  @media (max-width: 900px) { .article-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 620px) { .article-grid { grid-template-columns: 1fr; } }
+</style>

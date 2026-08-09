@@ -5,8 +5,8 @@ import Header from "../components/layout/Header.astro";
 import Footer from "../components/layout/Footer.astro";
 import SeoHead from "../components/layout/SeoHead.astro";
 
-interface Props { title?: string; description?: string; image?: string; noindex?: boolean; }
-const { title, description = "Personalized acupuncture and integrative care in Mesa and Payson, Arizona.", image, noindex = false } = Astro.props;
+interface Props { title?: string; description?: string; image?: string; noindex?: boolean; wixSeo?: boolean; }
+const { title, description = "Personalized acupuncture and integrative care in Mesa and Payson, Arizona.", image, noindex = false, wixSeo = false } = Astro.props;
 const [settings, locations] = await Promise.all([getSiteSettings(), getLocations()]);
 const pageTitle = title ? `${title} | ${settings.businessName}` : `${settings.businessName} | Acupuncture in Mesa & Payson`;
 ---
@@ -16,7 +16,8 @@ const pageTitle = title ? `${title} | ${settings.businessName}` : `${settings.bu
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#16302A" />
-    <SeoHead title={pageTitle} description={description} image={image} noindex={noindex} />
+    {!wixSeo && <SeoHead title={pageTitle} description={description} image={image} noindex={noindex} />}
+    <slot name="seo-tags" />
     <slot name="head" />
   </head>
   <body data-page-section={Astro.url.pathname === "/" ? "home" : Astro.url.pathname.split("/").filter(Boolean)[0] || "home"}>

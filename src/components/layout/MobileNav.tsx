@@ -31,7 +31,7 @@ export default function MobileNav({ items, bookingUrl, currentPath }: Props) {
       <div ref={panel} id="mobile-menu" className="mobile-nav__panel" role="dialog" aria-modal="true" aria-label="Site navigation">
         <button className="mobile-nav__close" type="button" onClick={() => { setOpen(false); trigger.current?.focus(); }} aria-label="Close navigation">×</button>
         <nav aria-label="Mobile navigation"><ul>
-          {items.map((item) => <li key={item.href}><a href={item.href} aria-current={currentPath === item.href ? "page" : undefined}>{item.label}</a></li>)}
+          {items.map((item) => <li key={item.href}><a href={item.href} aria-current={currentPath === item.href || (item.href !== "/" && currentPath.startsWith(`${item.href}/`)) ? "page" : undefined}>{item.label}</a></li>)}
         </ul></nav>
         <div className="mobile-nav__booking-actions">
           <a className="mobile-nav__book mobile-nav__book--zocdoc" href={bookingUrl} target="_blank" rel="noopener noreferrer" data-analytics-event="booking_click" data-analytics-section="mobile_header_zocdoc">Book on Zocdoc</a>
