@@ -1,6 +1,7 @@
 ---
 import MobileNav from "./MobileNav";
 import Button from "../ui/Button.astro";
+import SocialLinks from "../ui/SocialLinks.astro";
 import type { Location, SiteSettings } from "../../types/content";
 import { DIRECT_BOOKING_PATH } from "../../lib/booking";
 interface Props { settings: SiteSettings; locations: Location[]; currentPath: string; }
@@ -19,8 +20,11 @@ const items = [
 <header class="site-header">
   <div class="access-bar"><div class="container access-inner">
     <a class="va-access" href="/va-insurance#va-care" data-analytics-event="cta_click" data-analytics-section="global_va_bar"><strong>Veterans</strong><span class="va-access__full">VA community care requires prior authorization. Review the steps.</span><span class="va-access__compact">VA authorization guide</span></a>
-    <div class="clinic-links" aria-label="Clinic phone numbers">{locations.map((location) => <a href={`tel:${location.phone.replace(/[^\d+]/g,"")}`} data-analytics-event="phone_click" data-analytics-section={`global_${location.slug}`}><strong>{location.city}</strong><span>{location.status === "opening_soon" ? "Opening soon · " : ""}{location.phone}</span></a>)}</div>
-    <a class="clinic-links-compact" href="/contact">Mesa &amp; Payson</a>
+    <div class="utility-links">
+      <div class="clinic-links" aria-label="Clinic phone numbers">{locations.map((location) => <a href={`tel:${location.phone.replace(/[^\d+]/g,"")}`} data-analytics-event="phone_click" data-analytics-section={`global_${location.slug}`}><strong>{location.city}</strong><span>{location.status === "opening_soon" ? "Opening soon · " : ""}{location.phone}</span></a>)}</div>
+      <a class="clinic-links-compact" href="/contact">Mesa &amp; Payson</a>
+      <SocialLinks settings={settings} section="header" variant="brand" />
+    </div>
   </div></div>
   <div class="container header-inner">
   <a class="brand" href="/" aria-label={`${settings.businessName}, home`}><span>Marin Holy Hill</span><small>Acupuncture Clinic</small></a>
@@ -38,6 +42,7 @@ const items = [
   .va-access { display: inline-flex; align-items: center; gap: .5rem; font-size: var(--step--1); }
   .va-access strong { color: var(--dawn-pale); font: 600 .7rem/1 var(--font-utility); letter-spacing: .08em; text-transform: uppercase; }
   .va-access__compact, .clinic-links-compact { display: none; }
+  .utility-links { display: flex; align-items: center; gap: .8rem; flex-shrink: 0; }
   .clinic-links { display: flex; align-items: center; gap: 1rem; font-size: .74rem; }
   .clinic-links a { display: inline-flex; align-items: center; gap: .35rem; }
   .clinic-links strong { color: var(--dawn-pale); font-weight: 600; }
@@ -53,7 +58,8 @@ const items = [
   .desktop-book :global(.button) { padding-inline: .9rem; }
   .mobile-book { display: none; margin-left: auto; }
   @media (max-width: 1160px) { .desktop-nav, .desktop-book { display: none; } .mobile-book { display: block; } .clinic-links { display: none; } .clinic-links-compact { display: inline; flex-shrink: 0; font-size: .75rem; } }
-  @media (max-width: 560px) { .access-inner { gap: .6rem; } .va-access__full { display: none; } .va-access__compact { display: inline; } }
+  @media (max-width: 560px) { .access-inner { gap: .6rem; } .va-access__full, .clinic-links-compact { display: none; } .va-access__compact { display: inline; } }
+  @media (max-width: 360px) { .va-access strong { display: none; } }
   @media (max-width: 460px) { .mobile-book { display: none; } }
   @media (max-width: 420px) { .header-inner { gap: .5rem; } .brand span { font-size: 1.18rem; } .brand small { font-size: .52rem; } }
 </style>
