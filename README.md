@@ -1,4 +1,4 @@
-# Production Web Application — Technical Architecture
+# Healthcare Practice Website & Booking System Technical Architecture
 
 An anonymized case study of a custom Astro application combining a server-rendered frontend, headless content infrastructure, managed business services, and a direct Google Calendar booking system.
 
