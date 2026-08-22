@@ -101,7 +101,7 @@ const definitions = [
   // Wix Form custom fields). Written server-side (elevated) only on booking
   // success. Holds only email-safe fields (no DOB / insurance).
   { id:"BookingEmails", displayName:"Booking Emails", permissions:ADMIN_ONLY, fields:[
-    {key:"firstName",displayName:"First Name",type:"TEXT"},{key:"email",displayName:"Email",type:"TEXT"},{key:"service",displayName:"Service",type:"TEXT"},{key:"location",displayName:"Location",type:"TEXT"},{key:"appointmentTime",displayName:"Appointment Time",type:"TEXT"},{key:"referenceId",displayName:"Reference ID",type:"TEXT"},{key:"status",displayName:"Status",type:"TEXT"},{key:"createdAt",displayName:"Created At",type:"TEXT"}
+    {key:"firstName",displayName:"First Name",type:"TEXT"},{key:"patientName",displayName:"Patient Name",type:"TEXT"},{key:"email",displayName:"Patient Email",type:"TEXT"},{key:"patientPhone",displayName:"Patient Phone",type:"TEXT"},{key:"patientType",displayName:"Patient Type",type:"TEXT"},{key:"service",displayName:"Service",type:"TEXT"},{key:"location",displayName:"Location",type:"TEXT"},{key:"appointmentTime",displayName:"Appointment Time",type:"TEXT"},{key:"reservationCreatedAt",displayName:"Reservation Created At",type:"TEXT"},{key:"referenceId",displayName:"Reference ID",type:"TEXT"},{key:"clinicAddress",displayName:"Clinic Address",type:"TEXT"},{key:"clinicPhone",displayName:"Clinic Phone",type:"TEXT"},{key:"status",displayName:"Status",type:"TEXT"},{key:"createdAt",displayName:"Created At (UTC ISO)",type:"TEXT"}
   ]},
   { id:"Appointments", displayName:"Appointments", permissions:ADMIN_ONLY, fields:[
     {key:"patientType",displayName:"Patient Type",type:"TEXT"},{key:"service",displayName:"Service",type:"TEXT"},{key:"location",displayName:"Location",type:"TEXT"},{key:"name",displayName:"Name",type:"TEXT"},{key:"email",displayName:"Email",type:"TEXT"},{key:"phone",displayName:"Phone",type:"TEXT"},{key:"insuranceCompany",displayName:"Insurance Company",type:"TEXT"},{key:"insuranceId",displayName:"Insurance ID",type:"TEXT"},{key:"dateOfBirth",displayName:"Date of Birth",type:"TEXT"},{key:"message",displayName:"Message",type:"TEXT"},{key:"startTime",displayName:"Start Time (UTC ISO)",type:"TEXT"},{key:"endTime",displayName:"End Time (UTC ISO)",type:"TEXT"},{key:"googleCalendarId",displayName:"Google Calendar ID",type:"TEXT"},{key:"googleEventId",displayName:"Google Event ID",type:"TEXT"},{key:"status",displayName:"Status",type:"TEXT"},{key:"referenceId",displayName:"Reference ID",type:"TEXT"},{key:"createdAt",displayName:"Created At (UTC ISO)",type:"TEXT"}
@@ -166,6 +166,11 @@ async function seedRows(collectionId, rows, keyOf, transform = (row) => row) {
 }
 
 for (const definition of definitions) await ensureCollection(definition);
+
+if (process.argv.includes("--schema-only")) {
+  console.log("[CMS] Schema migration complete; content seeding skipped.");
+  process.exit(0);
+}
 
 await seedRows("Treatments",FALLBACK_TREATMENTS,(row)=>row.slug,(row)=>{ const {id,...data}=row; return {...data,imagePath:imagePathBySlug[row.slug]??""}; });
 await seedRows("Conditions",FALLBACK_CONDITIONS,(row)=>row.slug,(row)=>{ const {id,...data}=row; return data; });

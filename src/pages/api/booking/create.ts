@@ -15,12 +15,12 @@ const PATIENT_TYPES: PatientType[] = ["first_time", "existing"];
  * Books a direct appointment. Order (see PLAN.md §9):
  *  1. validate input           2. revalidate slot is still free (fresh freeBusy)
  *  3. atomic CMS lock (pending) 4. create Google event in the mapped calendar
- *  5. mark record booked        6. submit confirmation form (email + CRM)
+ *  5. mark record booked        6. queue Wix Automation email data
  * Any failure after the lock releases it so the slot reopens.
  *
  * Privacy: request bodies are never logged. The calendar event carries the
  * FULL booking details by owner decision — Dr. Kang uses Google Calendar as the
- * main dashboard. The confirmation FORM/email path stays minimal
+ * main dashboard. The Wix Automation email path stays minimal
  * (name/email/phone/service/location/time/ref) — DOB/insurance/message are
  * never sent to the email/CRM path.
  */
@@ -105,6 +105,7 @@ export const POST: APIRoute = async ({ request }) => {
   // ── Atomic CMS lock (deterministic id per slot) ──
   const id = await deterministicAppointmentId(location, slotStart);
   const referenceId = makeReferenceId();
+  const createdAt = new Date().toISOString();
   const record: AppointmentRecord = {
     _id: id,
     patientType,
@@ -123,7 +124,7 @@ export const POST: APIRoute = async ({ request }) => {
     googleEventId: "",
     status: "pending",
     referenceId,
-    createdAt: new Date().toISOString(),
+    createdAt,
   };
   const lock = await insertPendingAppointment(record);
   if (!lock.ok) {
@@ -168,10 +169,14 @@ export const POST: APIRoute = async ({ request }) => {
   // ── Confirmation email (best-effort; drives the Wix Automation) ──
   await sendBookingConfirmation({
     firstName: form.name.split(/\s+/)[0] || form.name,
+    patientName: form.name,
     email: form.email,
+    patientPhone: form.phone,
+    patientType: patientLabel,
     service: svc.label,
     location: loc.name,
     appointmentTime: formatPhoenixLabel(slotStart),
+    reservationCreatedAt: formatPhoenixLabel(createdAt),
     referenceId,
     clinicPhone: loc.phone,
     clinicAddress: [loc.addressLine1, loc.addressLine2, `${loc.city}, ${loc.state} ${loc.postalCode}`]

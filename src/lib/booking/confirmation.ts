@@ -19,10 +19,14 @@ const COLLECTION = "BookingEmails";
 
 export interface ConfirmationInput {
   firstName: string;
+  patientName: string;
   email: string;
+  patientPhone: string;
+  patientType: string;
   service: string; // human label
   location: string; // human label
   appointmentTime: string; // Phoenix-readable label
+  reservationCreatedAt: string; // Phoenix-readable label
   referenceId: string;
   clinicAddress: string; // one-line address of the booked clinic
   clinicPhone: string; // phone of the booked clinic
@@ -32,10 +36,14 @@ export async function sendBookingConfirmation(input: ConfirmationInput): Promise
   try {
     await auth.elevate(items.insert)(COLLECTION, {
       firstName: input.firstName,
+      patientName: input.patientName,
       email: input.email,
+      patientPhone: input.patientPhone,
+      patientType: input.patientType,
       service: input.service,
       location: input.location,
       appointmentTime: input.appointmentTime,
+      reservationCreatedAt: input.reservationCreatedAt,
       referenceId: input.referenceId,
       clinicAddress: input.clinicAddress,
       clinicPhone: input.clinicPhone,
